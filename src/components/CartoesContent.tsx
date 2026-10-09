@@ -11,7 +11,10 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { MonthPicker } from "./MonthPicker";
 
+import { useFinance } from "../context/FinanceContext";
+
 export function CartoesContent() {
+  const { cards, addCard } = useFinance();
   const [activeTab, setActiveTab] = useState<"abertas" | "fechadas">("fechadas");
   const [isNewCardModalOpen, setIsNewCardModalOpen] = useState(false);
   const [cardName, setCardName] = useState("");
@@ -19,37 +22,20 @@ export function CartoesContent() {
   const [closingDay, setClosingDay] = useState("9");
   const [brand, setBrand] = useState("VISA");
 
-  const [cards, setCards] = useState([
-    {
-      id: "1",
-      brand: "VISA",
-      name: "Cartão dia 9",
-      invoiceStatus: "Fatura zerada",
-      totalInvoice: "0,00",
-      dueDate: "9 de outubro de 2026",
-      usedAmount: 0,
-      totalLimit: 15000,
-    },
-  ]);
-
   const handleCreateCard = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cardName.trim()) return;
 
     const numLimit = parseFloat(limit.replace(/\D/g, "")) || 5000;
-    setCards([
-      ...cards,
-      {
-        id: String(Date.now()),
-        brand,
-        name: cardName,
-        invoiceStatus: "Fatura zerada",
-        totalInvoice: "0,00",
-        dueDate: `${closingDay} de outubro de 2026`,
-        usedAmount: 0,
-        totalLimit: numLimit,
-      },
-    ]);
+    addCard({
+      brand,
+      name: cardName,
+      invoiceStatus: "Fatura zerada",
+      totalInvoice: "0,00",
+      dueDate: `${closingDay} de outubro de 2026`,
+      usedAmount: 0,
+      totalLimit: numLimit,
+    });
     setCardName("");
     setLimit("");
     setIsNewCardModalOpen(false);
@@ -195,7 +181,9 @@ export function CartoesContent() {
               <span className="text-xs font-medium text-slate-400 block mb-1">
                 Sua próxima fatura vence em
               </span>
-              <p className="text-base font-bold text-slate-900">9 de outubro de 2026</p>
+              <p className="text-base font-bold text-slate-900">
+                {cards.length > 0 ? cards[0].dueDate : "Nenhum cartão cadastrado"}
+              </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-sm shrink-0">
               <Calendar className="h-6 w-6" />
@@ -207,7 +195,9 @@ export function CartoesContent() {
               <span className="text-xs font-medium text-slate-400 block mb-1">
                 Limite Disponível
               </span>
-              <p className="text-lg font-bold text-slate-900">R$ 15.000,00</p>
+              <p className="text-lg font-bold text-slate-900">
+                R$ {cards.reduce((acc, c) => acc + (c.totalLimit - c.usedAmount), 0).toLocaleString("pt-BR")},00
+              </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm shrink-0">
               <DollarSign className="h-6 w-6" />
@@ -219,7 +209,9 @@ export function CartoesContent() {
               <span className="text-xs font-medium text-slate-400 block mb-1">
                 Valor total
               </span>
-              <p className="text-lg font-bold text-slate-900">R$ 0,00</p>
+              <p className="text-lg font-bold text-slate-900">
+                R$ {cards.reduce((acc, c) => acc + c.usedAmount, 0).toLocaleString("pt-BR")},00
+              </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-white shadow-sm shrink-0">
               <CreditCard className="h-6 w-6" />

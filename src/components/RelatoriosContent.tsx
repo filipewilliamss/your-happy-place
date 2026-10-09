@@ -45,32 +45,32 @@ const MONTH_NAMES = [
 ];
 
 export function RelatoriosContent() {
-  const { selectedMonth, selectedYear, setSelectedMonth } = useFinance();
+  const { transactions, metrics, selectedMonth, selectedYear, setSelectedMonth } = useFinance();
   const [chartType, setChartType] = useState<"pie" | "line" | "bar">("pie");
   const [filterCategory, setFilterCategory] = useState("Despesas por categorias");
 
-  const categoriesData = [
-    { name: "Casa", value: 12433.90, percent: "88.05%", color: "#0284c7", icon: Home },
-    { name: "Outros", value: 926.62, percent: "6.56%", color: "#64748b", icon: MoreHorizontal },
-    { name: "Educação", value: 650.68, percent: "4.61%", color: "#3b82f6", icon: GraduationCap },
-    { name: "Serviços", value: 110.00, percent: "0.78%", color: "#0d9488", icon: FileText },
-  ];
+  // Dynamic grouping by category
+  const expenseTransactions = transactions.filter((t) => t.isExpense);
+  const totalExpense = expenseTransactions.reduce((acc, t) => acc + t.rawAmount, 0);
 
-  const barData = [
-    { name: "Casa", valor: 12433.90 },
-    { name: "Outros", valor: 926.62 },
-    { name: "Educação", valor: 650.68 },
-    { name: "Serviços", valor: 110.00 },
-  ];
+  const categoryMap = new Map<string, number>();
+  expenseTransactions.forEach((t) => {
+    categoryMap.set(t.category, (categoryMap.get(t.category) || 0) + t.rawAmount);
+  });
 
-  const lineData = [
-    { day: "01/10", total: 1200 },
-    { day: "05/10", total: 4300 },
-    { day: "10/10", total: 8500 },
-    { day: "15/10", total: 11200 },
-    { day: "20/10", total: 13400 },
-    { day: "30/10", total: 14121.20 },
-  ];
+  const categoriesData = Array.from(categoryMap.entries()).map(([name, value]) => {
+    const percent = totalExpense > 0 ? `${((value / totalExpense) * 100).toFixed(1)}%` : "0%";
+    return {
+      name,
+      value,
+      percent,
+      color: name === "Alimentação" ? "#f97316" : name === "Casa" ? "#0284c7" : name === "Transporte" ? "#f59e0b" : "#64748b",
+      icon: Home,
+    };
+  });
+
+  const barData = categoriesData.map((c) => ({ name: c.name, valor: c.value }));
+  const lineData = expenseTransactions.map((t) => ({ day: t.date.slice(0, 5), total: t.rawAmount }));
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -175,21 +175,21 @@ export function RelatoriosContent() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={categoriesData}
+                    data={categoriesData.length > 0 ? categoriesData : [{ name: "Vazio", value: 100, color: "#e2e8f0" }]}
                     innerRadius="65%"
                     outerRadius="88%"
-                    paddingAngle={3}
+                    paddingAngle={categoriesData.length > 0 ? 3 : 0}
                     dataKey="value"
                     stroke="none"
                   >
-                    {categoriesData.map((entry, index) => (
+                    {(categoriesData.length > 0 ? categoriesData : [{ name: "Vazio", value: 100, color: "#e2e8f0" }]).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-bold text-slate-800">R$ 14.121,20</span>
+                <span className="text-2xl font-bold text-slate-800">{metrics.despesas}</span>
                 <span className="text-xs text-slate-400 font-medium">Total</span>
               </div>
             </div>
@@ -197,32 +197,38 @@ export function RelatoriosContent() {
             {/* Categories Breakdown List */}
             <div className="space-y-5">
               <h3 className="text-base font-bold text-slate-700 mb-4">Despesas por categorias</h3>
-              {categoriesData.map((cat, idx) => {
-                const Icon = cat.icon;
-                return (
-                  <div key={idx} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm"
-                        style={{ backgroundColor: cat.color }}
-                      >
-                        <Icon className="h-5 w-5" />
+              {categoriesData.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-sm">
+                  Nenhuma despesa registrada para este mês.
+                </div>
+              ) : (
+                categoriesData.map((cat, idx) => {
+                  const Icon = cat.icon;
+                  return (
+                    <div key={idx} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm"
+                          style={{ backgroundColor: cat.color }}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-slate-800">{cat.name}</div>
+                          <div className="text-xs text-slate-400">{cat.percent}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-bold text-slate-800">{cat.name}</div>
+
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-red-500">
+                          R$ {cat.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        </div>
                         <div className="text-xs text-slate-400">{cat.percent}</div>
                       </div>
                     </div>
-
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-red-500">
-                        R$ {cat.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                      </div>
-                      <div className="text-xs text-slate-400">{cat.percent}</div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         )}

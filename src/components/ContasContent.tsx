@@ -13,64 +13,31 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 import { MonthPicker } from "./MonthPicker";
+import { useFinance } from "../context/FinanceContext";
 
 interface ContasContentProps {
   onOpenNewExpense?: () => void;
 }
 
 export function ContasContent({ onOpenNewExpense }: ContasContentProps) {
+  const { accounts, addAccount, metrics } = useFinance();
   const [isNewAccountOpen, setIsNewAccountOpen] = useState(false);
   const [accountName, setAccountName] = useState("");
   const [initialBalance, setInitialBalance] = useState("");
   const [accountType, setAccountType] = useState("Conta Corrente");
 
-  // Sample accounts list that can be dynamically extended
-  const [accounts, setAccounts] = useState([
-    {
-      id: "1",
-      name: "Carteira",
-      type: "wallet",
-      currentBalance: "-57.695,90",
-      predictedBalance: "-26.730,19",
-      isNegative: true,
-      color: "bg-blue-600",
-    },
-    {
-      id: "2",
-      name: "Carteira para pagar cont...",
-      type: "card",
-      currentBalance: "-1.113,09",
-      predictedBalance: "-1.543,09",
-      isNegative: true,
-      color: "bg-indigo-600",
-    },
-    {
-      id: "3",
-      name: "Conta FL",
-      type: "bank",
-      currentBalance: "28.505,01",
-      predictedBalance: "28.505,01",
-      isNegative: false,
-      color: "bg-blue-500",
-    },
-  ]);
-
   const handleCreateAccount = (e: React.FormEvent) => {
     e.preventDefault();
     if (!accountName.trim()) return;
 
-    setAccounts([
-      ...accounts,
-      {
-        id: String(Date.now()),
-        name: accountName,
-        type: "bank",
-        currentBalance: initialBalance || "0,00",
-        predictedBalance: initialBalance || "0,00",
-        isNegative: initialBalance.startsWith("-"),
-        color: "bg-blue-600",
-      },
-    ]);
+    addAccount({
+      name: accountName,
+      type: accountType === "Carteira / Dinheiro" ? "wallet" : accountType === "Poupança" ? "card" : "bank",
+      currentBalance: initialBalance || "0,00",
+      predictedBalance: initialBalance || "0,00",
+      isNegative: initialBalance.startsWith("-"),
+      color: "bg-blue-600",
+    });
     setAccountName("");
     setInitialBalance("");
     setIsNewAccountOpen(false);
@@ -205,7 +172,7 @@ export function ContasContent({ onOpenNewExpense }: ContasContentProps) {
               <span className="text-xs font-semibold text-slate-500 flex items-center mb-1">
                 Saldo atual <ChevronRight className="h-3 w-3 ml-0.5" />
               </span>
-              <p className="text-xl font-bold text-slate-900">R$ -30.303,95</p>
+              <p className="text-xl font-bold text-slate-900">{metrics.saldoAtual}</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-sm">
               <Wallet className="h-6 w-6" />
@@ -217,7 +184,7 @@ export function ContasContent({ onOpenNewExpense }: ContasContentProps) {
               <span className="text-xs font-semibold text-slate-500 flex items-center mb-1">
                 Saldo previsto <ChevronRight className="h-3 w-3 ml-0.5" />
               </span>
-              <p className="text-xl font-bold text-slate-900">R$ 231,76</p>
+              <p className="text-xl font-bold text-slate-900">{metrics.saldoAtual}</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm">
               <Building2 className="h-6 w-6" />

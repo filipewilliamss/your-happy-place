@@ -87,117 +87,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState<number>(9); // 9 = Outubro
   const [selectedYear, setSelectedYear] = useState<number>(2026);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: "1",
-      date: "09/10/2026",
-      desc: "Supermercado Semar",
-      category: "Alimentação",
-      categoryColor: "bg-orange-500",
-      account: "Carteira",
-      amount: "-452,30",
-      rawAmount: 452.30,
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "2",
-      date: "08/10/2026",
-      desc: "Salário Mensal",
-      category: "Salário",
-      categoryColor: "bg-green-500",
-      account: "Conta FL",
-      amount: "10.300,00",
-      rawAmount: 10300.00,
-      isExpense: false,
-      paid: true,
-    },
-    {
-      id: "3",
-      date: "08/10/2026",
-      desc: "Aluguel Apartamento",
-      category: "Casa",
-      categoryColor: "bg-blue-500",
-      account: "Conta FL",
-      amount: "-3.200,00",
-      rawAmount: 3200.00,
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "4",
-      date: "07/10/2026",
-      desc: "Combustível Posto Ipiranga",
-      category: "Transporte",
-      categoryColor: "bg-amber-500",
-      account: "Carteira",
-      amount: "-220,00",
-      rawAmount: 220.00,
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "5",
-      date: "06/10/2026",
-      desc: "Freelance Desenvolvimento",
-      category: "Serviços",
-      categoryColor: "bg-teal-500",
-      account: "Conta FL",
-      amount: "2.500,00",
-      rawAmount: 2500.00,
-      isExpense: false,
-      paid: true,
-    },
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [accounts, setAccounts] = useState<Account[]>([
-    {
-      id: "1",
-      name: "Carteira",
-      type: "wallet",
-      currentBalance: "-57.695,90",
-      predictedBalance: "-26.730,19",
-      isNegative: true,
-      color: "bg-blue-600",
-    },
-    {
-      id: "2",
-      name: "Carteira para pagar cont...",
-      type: "card",
-      currentBalance: "-1.113,09",
-      predictedBalance: "-1.543,09",
-      isNegative: true,
-      color: "bg-indigo-600",
-    },
-    {
-      id: "3",
-      name: "Conta FL",
-      type: "bank",
-      currentBalance: "28.505,01",
-      predictedBalance: "28.505,01",
-      isNegative: false,
-      color: "bg-blue-500",
-    },
-  ]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
-  const [cards, setCards] = useState<CreditCardItem[]>([
-    {
-      id: "1",
-      brand: "VISA",
-      name: "Cartão dia 9",
-      invoiceStatus: "Fatura zerada",
-      totalInvoice: "0,00",
-      dueDate: "9 de outubro de 2026",
-      usedAmount: 0,
-      totalLimit: 15000,
-    },
-  ]);
+  const [cards, setCards] = useState<CreditCardItem[]>([]);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: "welcome-1",
       sender: "ai",
-      text: "👋 Olá, Filipe! Sou seu Assistente Financeiro Inteligente.\n\nVocê pode me mandar uma mensagem de texto ou **falar por áudio** clicando no microfone 🎙️!\n\nExemplos do que você pode falar:\n• *'Almocei 45 reais no débito hoje'*\n• *'Comprei um tênis de 300 reais em 3x no cartão'* \n• *'Recebi 1.500 de freela hoje'* \n• *'Gasolina 120 reais ontem'*",
+      text: "👋 Olá, bem-vindo(a) à sua nova conta no FinanceApp!\n\nSeu painel está zerado e pronto para você começar do zero.\n\nVocê pode me mandar uma mensagem de texto ou **falar por áudio** no microfone 🎙️ para adicionar suas primeiras transações (ex: *'Recebi 3.000 de salário hoje'* ou *'Almoço 35 reais no débito'*).",
       timestamp: "Agora",
     },
   ]);
@@ -242,7 +142,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
 
     const bal = rec - desp;
-    const saldo = -30303.95 + bal; // baseline + movement
+    const saldo = bal; // zero baseline for new clean account
 
     return {
       saldoAtual: `R$ ${saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
@@ -501,12 +401,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 }
 
 const defaultMetrics = {
-  saldoAtual: "R$ -30.303,95",
-  receitas: "R$ 10.300,00",
-  despesas: "R$ 14.121,20",
-  balanco: "R$ -3.821,20",
-  totalReceitasNum: 10300,
-  totalDespesasNum: 14121.20,
+  saldoAtual: "R$ 0,00",
+  receitas: "R$ 0,00",
+  despesas: "R$ 0,00",
+  balanco: "R$ 0,00",
+  totalReceitasNum: 0,
+  totalDespesasNum: 0,
 };
 
 const defaultContextValue: FinanceContextType = {

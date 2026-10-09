@@ -73,7 +73,7 @@ export function DashboardContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <ChartCard title="Despesas por categoria">
           <div className="h-64 flex flex-col items-center justify-center relative">
-            <DonutChart value="R$ 14.121,20" color="#0ea5e9" />
+            <DonutChart value={metrics.despesas} color="#0ea5e9" />
           </div>
           <div className="text-center mt-2">
             <button className="text-xs font-semibold text-blue-600 uppercase">Ver Mais</button>
@@ -82,7 +82,7 @@ export function DashboardContent() {
         
         <ChartCard title="Receitas por categoria">
           <div className="h-64 flex flex-col items-center justify-center relative">
-            <DonutChart value="R$ 10.300,00" color="#0ea5e9" />
+            <DonutChart value={metrics.receitas} color="#0ea5e9" />
           </div>
           <div className="text-center mt-2">
             <button className="text-xs font-semibold text-blue-600 uppercase">Ver Mais</button>
@@ -95,22 +95,28 @@ export function DashboardContent() {
         <ChartCard title="Balanço mensal">
           <div className="flex h-56 items-center">
             <div className="w-1/3 flex justify-center items-end space-x-2 h-32">
-              <div className="w-4 bg-green-500 rounded-t-sm h-full"></div>
-              <div className="w-4 bg-red-500 rounded-t-sm h-[120%]"></div>
+              <div 
+                className="w-4 bg-green-500 rounded-t-sm transition-all"
+                style={{ height: metrics.totalReceitasNum > 0 ? "100%" : "4px" }}
+              ></div>
+              <div 
+                className="w-4 bg-red-500 rounded-t-sm transition-all"
+                style={{ height: metrics.totalDespesasNum > 0 ? "100%" : "4px" }}
+              ></div>
             </div>
             <div className="w-2/3 flex flex-col justify-center space-y-4 px-4">
                <div className="flex justify-between text-sm">
                  <span className="text-slate-600 font-medium">Receitas</span>
-                 <span className="text-green-600 font-semibold">R$ 10.300,00</span>
+                 <span className="text-green-600 font-semibold">{metrics.receitas}</span>
                </div>
                <div className="flex justify-between text-sm">
                  <span className="text-slate-600 font-medium">Despesas</span>
-                 <span className="text-red-500 font-semibold">R$ 14.121,20</span>
+                 <span className="text-red-500 font-semibold">{metrics.despesas}</span>
                </div>
                <div className="h-px bg-slate-200 w-full my-1"></div>
                <div className="flex justify-between text-sm">
                  <span className="text-slate-800 font-semibold">Balanço</span>
-                 <span className="text-slate-800 font-semibold">R$ -3.821,20</span>
+                 <span className="text-slate-800 font-semibold">{metrics.balanco}</span>
                </div>
             </div>
           </div>
@@ -125,35 +131,18 @@ export function DashboardContent() {
             <button className="text-xs font-semibold px-3 py-1 bg-teal-700 text-white rounded-full">Faturas fechadas</button>
           </div>
           
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <div className="font-bold text-blue-800 italic mr-3 text-lg">VISA</div>
-              <div>
-                <div className="text-sm font-semibold text-slate-800">Cartão dia 9</div>
-                <div className="text-xs text-slate-500">Fatura zerada</div>
-                <div className="text-xs text-red-500 font-medium">R$ 0,00</div>
-              </div>
-            </div>
-            <button className="h-6 w-6 rounded-full border border-teal-600 flex items-center justify-center">
-              <span className="text-teal-600 text-lg leading-none">+</span>
-            </button>
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <CreditCard className="h-10 w-10 text-slate-300 mb-2" />
+            <p className="text-xs text-slate-500 font-medium mb-1">Nenhum cartão com fatura aberta</p>
+            <span className="text-[11px] text-slate-400">Limite total disponível: R$ 0,00</span>
           </div>
 
-          <div className="mb-2">
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-slate-200 w-0"></div>
-            </div>
-            <div className="text-right text-[10px] text-slate-400 mt-1">
-              Limite Disponível R$ 15.000,00
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
+          <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100">
             <span className="text-sm font-bold text-slate-800">TOTAL</span>
             <span className="text-sm font-bold text-slate-800">R$ 0,00</span>
           </div>
 
-          <div className="text-center mt-6">
+          <div className="text-center mt-4">
             <button className="text-xs font-semibold text-teal-700 uppercase">Ver Mais</button>
           </div>
         </ChartCard>
@@ -216,11 +205,14 @@ function ChartCard({ title, children }: { title: string, children: React.ReactNo
 }
 
 function DonutChart({ value, color }: { value: string, color: string }) {
-  const data = [
-    { name: 'Main', value: 85, color: color },
-    { name: 'Other1', value: 10, color: '#64748b' },
-    { name: 'Other2', value: 5, color: '#a855f7' },
-  ];
+  const isZero = value === "R$ 0,00" || value === "R$ 0";
+  const data = isZero
+    ? [{ name: 'Empty', value: 100, color: '#e2e8f0' }]
+    : [
+        { name: 'Main', value: 85, color: color },
+        { name: 'Other1', value: 10, color: '#64748b' },
+        { name: 'Other2', value: 5, color: '#a855f7' },
+      ];
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -230,7 +222,7 @@ function DonutChart({ value, color }: { value: string, color: string }) {
             data={data}
             innerRadius="70%"
             outerRadius="90%"
-            paddingAngle={2}
+            paddingAngle={isZero ? 0 : 2}
             dataKey="value"
             stroke="none"
           >
@@ -242,7 +234,7 @@ function DonutChart({ value, color }: { value: string, color: string }) {
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-lg font-bold text-slate-800">{value}</span>
-        <span className="text-xs text-slate-500">Total</span>
+        <span className="text-xs text-slate-400">Total</span>
       </div>
     </div>
   );

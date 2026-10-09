@@ -208,8 +208,14 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <div className="divide-y divide-slate-100">
           {filteredTransactions.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-sm">
-              Nenhuma transação encontrada para este filtro.
+            <div className="p-16 text-center text-slate-400 text-sm flex flex-col items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                <ArrowDownCircle className="h-6 w-6" />
+              </div>
+              <p className="font-semibold text-slate-600 mb-1">Nenhuma transação cadastrada</p>
+              <p className="text-xs text-slate-400 max-w-sm">
+                Clique no botão <strong>"+ Nova"</strong> acima ou fale com o <strong>Assistente FinAI</strong> no microfone 🎙️ para adicionar seu primeiro gasto ou receita!
+              </p>
             </div>
           ) : (
             filteredTransactions.map((tx) => (

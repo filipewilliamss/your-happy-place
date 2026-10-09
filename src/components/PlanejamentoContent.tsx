@@ -24,7 +24,7 @@ export function PlanejamentoContent() {
   
   const [planningActive, setPlanningActive] = useState(false);
   const [currentPlannedExpenses, setCurrentPlannedExpenses] = useState("0,00");
-  const [plannedIncomes] = useState("10.300,00");
+  const [plannedIncomes] = useState("0,00");
 
   const handleSaveBudget = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export function PlanejamentoContent() {
   };
 
   const copyPreviousMonth = () => {
-    setCurrentPlannedExpenses("8.500,00");
+    setCurrentPlannedExpenses("0,00");
     setPlanningActive(true);
   };
 
@@ -160,7 +160,7 @@ export function PlanejamentoContent() {
               <span className="text-xs font-medium text-slate-400 block mb-1">
                 Balanço planejado
               </span>
-              <p className="text-lg font-bold text-slate-900">R$ 1.800,00</p>
+              <p className="text-lg font-bold text-slate-900">R$ 0,00</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-sm shrink-0">
               <Scale className="h-6 w-6" />
@@ -172,7 +172,7 @@ export function PlanejamentoContent() {
               <span className="text-xs font-medium text-slate-400 block mb-1">
                 Economia planejada
               </span>
-              <p className="text-lg font-bold text-slate-900">17.48%</p>
+              <p className="text-lg font-bold text-slate-900">0.00%</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
               <PiggyBank className="h-6 w-6" />
