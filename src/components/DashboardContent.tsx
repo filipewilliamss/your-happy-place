@@ -1,10 +1,11 @@
 import { 
   ChevronDown, 
+  ChevronRight,
   Landmark, 
   ArrowUp, 
   ArrowDown, 
   CreditCard, 
-  ArrowRight,
+  ArrowRight, 
   Flag,
   LayoutTemplate
 } from "lucide-react";
@@ -13,7 +14,7 @@ import { useFinance } from "../context/FinanceContext";
 import { MonthPicker } from "./MonthPicker";
 
 export function DashboardContent() {
-  const { metrics } = useFinance();
+  const { metrics, navigateTo } = useFinance();
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -40,33 +41,40 @@ export function DashboardContent() {
           icon={<Landmark className="h-6 w-6 text-white" />} 
           iconBg="bg-blue-500"
           title="Saldo atual" 
-          value={metrics.saldoAtual} 
+          value={metrics.saldoAtual}
+          onClick={() => navigateTo("contas")}
         />
         <KpiCard 
           icon={<ArrowUp className="h-6 w-6 text-white" />} 
           iconBg="bg-green-500"
           title="Receitas" 
-          value={metrics.receitas} 
+          value={metrics.receitas}
+          onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
         />
         <KpiCard 
           icon={<ArrowDown className="h-6 w-6 text-white" />} 
           iconBg="bg-red-500"
           title="Despesas" 
-          value={metrics.despesas} 
+          value={metrics.despesas}
+          onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
         />
         <KpiCard 
           icon={<CreditCard className="h-6 w-6 text-white" />} 
           iconBg="bg-teal-600"
           title="Cartão de crédito" 
-          value="R$ 0,00" 
+          value="R$ 0,00"
+          onClick={() => navigateTo("cartoes")}
         />
       </div>
 
       <div className="mb-6">
-        <a href="#" className="text-sm font-medium text-blue-600 flex items-center hover:underline">
+        <button 
+          onClick={() => navigateTo("relatorios")}
+          className="text-sm font-medium text-blue-600 flex items-center hover:text-blue-700 hover:underline group cursor-pointer focus:outline-none"
+        >
           Meu Desempenho
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </a>
+          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
 
       {/* Row 1: Donut Charts */}
@@ -76,7 +84,12 @@ export function DashboardContent() {
             <DonutChart value={metrics.despesas} color="#0ea5e9" />
           </div>
           <div className="text-center mt-2">
-            <button className="text-xs font-semibold text-blue-600 uppercase">Ver Mais</button>
+            <button 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 uppercase cursor-pointer"
+            >
+              Ver Mais
+            </button>
           </div>
         </ChartCard>
         
@@ -85,7 +98,12 @@ export function DashboardContent() {
             <DonutChart value={metrics.receitas} color="#0ea5e9" />
           </div>
           <div className="text-center mt-2">
-            <button className="text-xs font-semibold text-blue-600 uppercase">Ver Mais</button>
+            <button 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 uppercase cursor-pointer"
+            >
+              Ver Mais
+            </button>
           </div>
         </ChartCard>
       </div>
@@ -121,7 +139,12 @@ export function DashboardContent() {
             </div>
           </div>
           <div className="text-center mt-4">
-            <button className="text-xs font-semibold text-blue-600 uppercase">Ver Mais</button>
+            <button 
+              onClick={() => navigateTo("relatorios")}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 uppercase cursor-pointer"
+            >
+              Ver Mais
+            </button>
           </div>
         </ChartCard>
 
@@ -143,7 +166,12 @@ export function DashboardContent() {
           </div>
 
           <div className="text-center mt-4">
-            <button className="text-xs font-semibold text-teal-700 uppercase">Ver Mais</button>
+            <button 
+              onClick={() => navigateTo("cartoes")}
+              className="text-xs font-semibold text-teal-700 hover:text-teal-800 uppercase cursor-pointer"
+            >
+              Ver Mais
+            </button>
           </div>
         </ChartCard>
       </div>
@@ -159,7 +187,10 @@ export function DashboardContent() {
           <p className="text-slate-500 text-sm mb-6">
             Melhore seu controle financeiro agora!
           </p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-medium uppercase tracking-wide transition-colors">
+          <button 
+            onClick={() => navigateTo("planejamento")}
+            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-6 py-2.5 rounded-full text-sm font-semibold uppercase tracking-wider transition-all shadow-sm hover:shadow-md cursor-pointer"
+          >
             Definir meu planejamento
           </button>
         </div>
@@ -176,19 +207,42 @@ export function DashboardContent() {
 
 // Subcomponents
 
-function KpiCard({ icon, iconBg, title, value }: { icon: React.ReactNode, iconBg: string, title: string, value: string }) {
+function KpiCard({ 
+  icon, 
+  iconBg, 
+  title, 
+  value, 
+  onClick 
+}: { 
+  icon: React.ReactNode; 
+  iconBg: string; 
+  title: string; 
+  value: string; 
+  onClick?: () => void;
+}) {
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div 
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] group focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none"
+    >
       <div className="flex items-center space-x-4">
-        <div className={`h-12 w-12 rounded-full ${iconBg} flex items-center justify-center`}>
+        <div className={`h-12 w-12 rounded-full ${iconBg} flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shadow-sm`}>
           {icon}
         </div>
         <div>
-          <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
+          <h3 className="text-slate-500 text-sm font-medium group-hover:text-slate-700 transition-colors">{title}</h3>
           <p className="text-slate-800 font-bold text-lg">{value}</p>
         </div>
       </div>
-      <ChevronDown className="h-5 w-5 text-slate-300 -rotate-90" />
+      <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-200" />
     </div>
   );
 }

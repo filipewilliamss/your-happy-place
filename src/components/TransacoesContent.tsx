@@ -45,8 +45,17 @@ const MONTH_NAMES_UPPER = [
 ];
 
 export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentProps) {
-  const { transactions, togglePaid, deleteTransaction, metrics, selectedMonth, selectedYear, setSelectedMonth } = useFinance();
-  const [filterType, setFilterType] = useState<"todos" | "despesas" | "receitas">("todos");
+  const { 
+    transactions, 
+    togglePaid, 
+    deleteTransaction, 
+    metrics, 
+    selectedMonth, 
+    selectedYear, 
+    setSelectedMonth,
+    transactionFilter: filterType,
+    setTransactionFilter: setFilterType,
+  } = useFinance();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 

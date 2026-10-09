@@ -56,6 +56,9 @@ export interface ChatMessage {
   };
 }
 
+export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios";
+export type TransactionFilterType = "todos" | "despesas" | "receitas";
+
 interface FinanceContextType {
   transactions: Transaction[];
   accounts: Account[];
@@ -65,6 +68,11 @@ interface FinanceContextType {
   selectedYear: number;
   setSelectedMonth: (m: number) => void;
   setSelectedYear: (y: number) => void;
+  activeTab: NavTab;
+  setActiveTab: (tab: NavTab) => void;
+  transactionFilter: TransactionFilterType;
+  setTransactionFilter: (filter: TransactionFilterType) => void;
+  navigateTo: (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => void;
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   togglePaid: (id: string) => void;
   deleteTransaction: (id: string) => void;
@@ -84,8 +92,17 @@ interface FinanceContextType {
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
+  const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
+  const [transactionFilter, setTransactionFilter] = useState<TransactionFilterType>("todos");
   const [selectedMonth, setSelectedMonth] = useState<number>(9); // 9 = Outubro
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+
+  const navigateTo = (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => {
+    if (options?.transactionFilter) {
+      setTransactionFilter(options.transactionFilter);
+    }
+    setActiveTab(tab);
+  };
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -386,6 +403,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         selectedYear,
         setSelectedMonth,
         setSelectedYear,
+        activeTab,
+        setActiveTab,
+        transactionFilter,
+        setTransactionFilter,
+        navigateTo,
         addTransaction,
         togglePaid,
         deleteTransaction,
@@ -418,6 +440,11 @@ const defaultContextValue: FinanceContextType = {
   selectedYear: 2026,
   setSelectedMonth: () => {},
   setSelectedYear: () => {},
+  activeTab: "dashboard",
+  setActiveTab: () => {},
+  transactionFilter: "todos",
+  setTransactionFilter: () => {},
+  navigateTo: () => {},
   addTransaction: () => {},
   togglePaid: () => {},
   deleteTransaction: () => {},

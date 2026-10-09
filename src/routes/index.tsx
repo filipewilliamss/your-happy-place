@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AppSidebar, NavTab } from "../components/AppSidebar";
+import { AppSidebar } from "../components/AppSidebar";
+import { useFinance } from "../context/FinanceContext";
 import { DashboardContent } from "../components/DashboardContent";
 import { ContasContent } from "../components/ContasContent";
 import { TransacoesContent } from "../components/TransacoesContent";
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
+  const { activeTab, setActiveTab } = useFinance();
   const [modalOpen, setModalOpen] = useState<"despesa" | "receita" | "cartao" | "transferencia" | null>(null);
 
   return (
