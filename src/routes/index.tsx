@@ -8,6 +8,7 @@ import { TransacoesContent } from "../components/TransacoesContent";
 import { CartoesContent } from "../components/CartoesContent";
 import { PlanejamentoContent } from "../components/PlanejamentoContent";
 import { RelatoriosContent } from "../components/RelatoriosContent";
+import { ConfiguracoesContent } from "../components/ConfiguracoesContent";
 import { AiFinancialAssistant } from "../components/AiFinancialAssistant";
 
 export const Route = createFileRoute("/")({
@@ -37,6 +38,7 @@ function Index() {
         {activeTab === "cartoes" && <CartoesContent />}
         {activeTab === "planejamento" && <PlanejamentoContent />}
         {activeTab === "relatorios" && <RelatoriosContent />}
+        {activeTab === "configuracoes" && <ConfiguracoesContent />}
       </main>
 
       {/* Floating AI Financial Assistant with Voice & Text recognition */}

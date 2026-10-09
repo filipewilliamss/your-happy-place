@@ -22,7 +22,7 @@ import {
 } from "./ui/dropdown-menu";
 import { TransactionModals } from "./TransactionModals";
 
-export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios";
+export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios" | "configuracoes";
 
 interface AppSidebarProps {
   activeTab: NavTab;
@@ -121,6 +121,8 @@ export function AppSidebar({ activeTab, onSelectTab, modalOpen, setModalOpen }: 
           <NavItem 
             icon={<Settings className="h-5 w-5" />} 
             label="Configurações" 
+            active={activeTab === "configuracoes"} 
+            onClick={() => onSelectTab("configuracoes")} 
           />
         </nav>
       </div>

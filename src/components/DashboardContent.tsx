@@ -197,9 +197,20 @@ export function DashboardContent() {
       </div>
 
       {/* Bottom Layout Management */}
-      <div className="flex flex-col items-center justify-center pb-20 text-slate-400">
-        <LayoutTemplate className="h-8 w-8 mb-2" />
-        <span className="text-xs font-semibold uppercase tracking-wider">Gerenciar Tela Inicial</span>
+      <div 
+        onClick={() => navigateTo("configuracoes")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigateTo("configuracoes");
+          }
+        }}
+        className="flex flex-col items-center justify-center pb-20 text-slate-400 hover:text-blue-600 cursor-pointer transition-colors group select-none"
+      >
+        <LayoutTemplate className="h-8 w-8 mb-2 group-hover:scale-105 transition-transform" />
+        <span className="text-xs font-semibold uppercase tracking-wider group-hover:underline">Gerenciar Tela Inicial</span>
       </div>
     </div>
   );

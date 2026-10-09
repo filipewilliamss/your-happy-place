@@ -56,7 +56,7 @@ export interface ChatMessage {
   };
 }
 
-export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios";
+export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios" | "configuracoes";
 export type TransactionFilterType = "todos" | "despesas" | "receitas";
 
 interface FinanceContextType {
