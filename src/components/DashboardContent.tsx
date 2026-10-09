@@ -18,6 +18,7 @@ import { MonthPicker } from "./MonthPicker";
 
 export function DashboardContent() {
   const { 
+    transactions,
     metrics, 
     navigateTo, 
     accounts, 
@@ -26,6 +27,15 @@ export function DashboardContent() {
     toggleHideBalance, 
     formatMasked 
   } = useFinance();
+
+  const pendingExpenses = transactions.filter((t) => t.isExpense && !t.paid);
+  const pendingExpensesTotal = pendingExpenses.reduce((sum, t) => sum + t.rawAmount, 0);
+
+  const pendingIncomes = transactions.filter((t) => !t.isExpense && !t.paid);
+  const pendingIncomesTotal = pendingIncomes.reduce((sum, t) => sum + t.rawAmount, 0);
+
+  const cardExpenses = transactions.filter((t) => t.account.includes("Cartão") && t.isExpense);
+  const cardExpensesTotal = cardExpenses.reduce((sum, t) => sum + t.rawAmount, 0);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -92,11 +102,13 @@ export function DashboardContent() {
                   <ArrowDown className="h-3.5 w-3.5" />
                 </div>
                 <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  0
+                  {pendingExpenses.length}
                 </span>
               </div>
               <span className="text-xs text-slate-500 block mb-0.5">Despesas pendentes</span>
-              <span className="text-sm font-bold text-red-600">{formatMasked("R$ 0,00")}</span>
+              <span className="text-sm font-bold text-red-600">
+                {formatMasked("R$ " + pendingExpensesTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
+              </span>
             </div>
 
             <div 
@@ -108,11 +120,13 @@ export function DashboardContent() {
                   <ArrowUp className="h-3.5 w-3.5" />
                 </div>
                 <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  0
+                  {pendingIncomes.length}
                 </span>
               </div>
               <span className="text-xs text-slate-500 block mb-0.5">Receitas pendentes</span>
-              <span className="text-sm font-bold text-emerald-600">{formatMasked("R$ 0,00")}</span>
+              <span className="text-sm font-bold text-emerald-600">
+                {formatMasked("R$ " + pendingIncomesTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
+              </span>
             </div>
           </div>
         </div>
@@ -305,7 +319,7 @@ export function DashboardContent() {
             icon={<CreditCard className="h-6 w-6 text-white" />} 
             iconBg="bg-teal-600"
             title="Cartão de crédito" 
-            value={formatMasked("R$ 0,00")}
+            value={formatMasked("R$ " + cardExpensesTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
             onClick={() => navigateTo("cartoes")}
           />
         </div>

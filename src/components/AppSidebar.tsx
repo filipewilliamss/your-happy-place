@@ -22,7 +22,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { TransactionModals } from "./TransactionModals";
 
 export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios" | "configuracoes";
 
@@ -153,9 +152,6 @@ export function AppSidebar({ activeTab, onSelectTab, modalOpen, setModalOpen }: 
           web-2.174.0
         </div>
       </div>
-
-      {/* Modals rendered here */}
-      <TransactionModals modalOpen={modalOpen} setModalOpen={setModalOpen} />
     </aside>
   );
 }

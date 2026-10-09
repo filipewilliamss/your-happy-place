@@ -9,12 +9,20 @@ import {
   ArrowUpCircle, 
   ArrowDownCircle, 
   CheckCircle2, 
+  Check,
   Circle, 
+  Bell,
+  Clock,
+  Pencil,
   Home, 
   Briefcase, 
   ShoppingBag, 
   Car, 
   Utensils, 
+  HeartPulse,
+  Gamepad2,
+  GraduationCap,
+  MoreHorizontal,
   CreditCard, 
   Building2, 
   Trash2, 
@@ -49,6 +57,8 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
     transactions, 
     togglePaid, 
     deleteTransaction, 
+    openEditTransaction,
+    openTransactionModal,
     metrics, 
     selectedMonth, 
     selectedYear, 
@@ -60,6 +70,18 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
+  const isOverdue = (dateStr: string, isPaid: boolean): boolean => {
+    if (isPaid) return false;
+    const parts = dateStr.split("/");
+    if (parts.length !== 3) return false;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    const txDate = new Date(year, month, day, 23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return txDate < today;
+  };
 
   const filteredTransactions = transactions.filter((t) => {
     if (filterType === "despesas" && !t.isExpense) return false;
@@ -228,63 +250,139 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
               </p>
             </div>
           ) : (
-            filteredTransactions.map((tx) => (
-              <div 
-                key={tx.id} 
-                className="flex items-center justify-between p-4 hover:bg-slate-50/80 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  {/* Status Toggle Button */}
-                  <button 
-                    onClick={() => togglePaid(tx.id)}
-                    className="focus:outline-none"
-                    title={tx.paid ? "Marcado como pago" : "Pendente"}
-                  >
-                    {tx.paid ? (
-                      <CheckCircle2 className={`h-5 w-5 ${tx.isExpense ? "text-red-500" : "text-green-500"}`} />
-                    ) : (
-                      <Circle className="h-5 w-5 text-slate-300 hover:text-slate-400" />
-                    )}
-                  </button>
+            filteredTransactions.map((tx) => {
+              const overdue = isOverdue(tx.date, tx.paid);
+              return (
+                <div 
+                  key={tx.id} 
+                  className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors gap-2 sm:gap-4"
+                >
+                  <div className="flex items-center space-x-2.5 sm:space-x-4 min-w-0 flex-1">
+                    {/* Status Toggle Button - Green & White check if paid, Red bell if overdue, Red circle if pending */}
+                    <button 
+                      onClick={() => togglePaid(tx.id)}
+                      className={`h-7 w-7 rounded-full flex items-center justify-center shadow-xs transition-all cursor-pointer shrink-0 active:scale-90 ${
+                        tx.paid
+                          ? "bg-emerald-500 hover:bg-emerald-600 text-white ring-2 ring-emerald-100"
+                          : overdue
+                          ? "bg-red-600 hover:bg-red-700 text-white animate-pulse ring-2 ring-red-200"
+                          : "bg-red-500 hover:bg-red-600 text-white ring-2 ring-red-100"
+                      }`}
+                      title={
+                        tx.paid
+                          ? "Pago (Clique para desmarcar)"
+                          : overdue
+                          ? "Vencido! Clique para marcar como pago"
+                          : "Pendente (Clique para marcar como pago)"
+                      }
+                    >
+                      {tx.paid ? (
+                        <Check className="h-4 w-4 stroke-[3] text-white" />
+                      ) : overdue ? (
+                        <Bell className="h-3.5 w-3.5 fill-white text-white" />
+                      ) : (
+                        <Circle className="h-3.5 w-3.5 fill-white text-white" />
+                      )}
+                    </button>
 
-                  <div className="text-xs text-slate-400 font-medium w-20">
-                    {tx.date}
+                    <div className="text-[11px] sm:text-xs text-slate-400 font-medium w-16 sm:w-20 shrink-0">
+                      {tx.date}
+                    </div>
+
+                    {/* Category Badge Icon */}
+                    <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl ${tx.categoryColor} flex items-center justify-center text-white shrink-0 shadow-xs`}>
+                      {tx.category === "Alimentação" && <Utensils className="h-4 w-4" />}
+                      {tx.category === "Salário" && <Briefcase className="h-4 w-4" />}
+                      {tx.category === "Casa" && <Home className="h-4 w-4" />}
+                      {tx.category === "Transporte" && <Car className="h-4 w-4" />}
+                      {tx.category === "Saúde" && <HeartPulse className="h-4 w-4" />}
+                      {tx.category === "Lazer" && <Gamepad2 className="h-4 w-4" />}
+                      {tx.category === "Educação" && <GraduationCap className="h-4 w-4" />}
+                      {tx.category === "Compras" && <ShoppingBag className="h-4 w-4" />}
+                      {(!["Alimentação", "Salário", "Casa", "Transporte", "Saúde", "Lazer", "Educação", "Compras"].includes(tx.category)) && <MoreHorizontal className="h-4 w-4" />}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{tx.desc}</span>
+                        {tx.installments && (
+                          <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded shrink-0">
+                            {tx.installments.current}/{tx.installments.total}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] sm:text-xs text-slate-400 flex items-center space-x-2 mt-0.5">
+                        <span className="font-medium">{tx.category}</span>
+                        <span>•</span>
+                        <span>{tx.account}</span>
+                        <span>•</span>
+                        {tx.paid ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+                            <Check className="h-2.5 w-2.5 stroke-[3]" /> Pago
+                          </span>
+                        ) : overdue ? (
+                          <span className="text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 animate-pulse">
+                            <Bell className="h-2.5 w-2.5 fill-red-700" /> Vencido
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+                            Pendente
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Category Badge Icon */}
-                  <div className={`h-8 w-8 rounded-full ${tx.categoryColor} flex items-center justify-center text-white shrink-0 shadow-sm`}>
-                    {tx.category === "Alimentação" && <Utensils className="h-4 w-4" />}
-                    {tx.category === "Salário" && <Briefcase className="h-4 w-4" />}
-                    {tx.category === "Casa" && <Home className="h-4 w-4" />}
-                    {tx.category === "Transporte" && <Car className="h-4 w-4" />}
-                    {tx.category === "Serviços" && <ShoppingBag className="h-4 w-4" />}
-                  </div>
+                  {/* Amount and Action buttons: Marcar como pago, Editar, Excluir */}
+                  <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                    <div className="text-right">
+                      <span className={`text-xs sm:text-base font-bold ${tx.isExpense ? "text-red-500" : "text-green-600"}`}>
+                        {formatMasked("R$ " + tx.amount)}
+                      </span>
+                      {tx.ignoreTransaction && (
+                        <span className="block text-[9px] text-slate-400 font-medium">Ignorado</span>
+                      )}
+                    </div>
 
-                  <div>
-                    <div className="text-sm font-semibold text-slate-800">{tx.desc}</div>
-                    <div className="text-xs text-slate-400 flex items-center space-x-2">
-                      <span className="font-medium">{tx.category}</span>
-                      <span>•</span>
-                      <span>{tx.account}</span>
+                    {/* Actions cluster */}
+                    <div className="flex items-center space-x-0.5 sm:space-x-1 pl-1.5 sm:pl-2 border-l border-slate-100">
+                      {/* Botão Marcar como pago / alternar */}
+                      <button 
+                        onClick={() => togglePaid(tx.id)}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          tx.paid 
+                            ? "text-emerald-600 hover:bg-emerald-50" 
+                            : overdue
+                            ? "text-red-600 hover:bg-red-50"
+                            : "text-red-500 hover:bg-red-50"
+                        }`}
+                        title={tx.paid ? "Desmarcar pagamento" : "Marcar como pago"}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </button>
+
+                      {/* Botão Editar */}
+                      <button 
+                        onClick={() => openEditTransaction(tx)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Editar transação"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+
+                      {/* Botão Excluir */}
+                      <button 
+                        onClick={() => deleteTransaction(tx.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Excluir transação"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-4">
-                  <span className={`text-sm font-bold ${tx.isExpense ? "text-red-500" : "text-green-600"}`}>
-                    {formatMasked("R$ " + tx.amount)}
-                  </span>
-
-                  <button 
-                    onClick={() => deleteTransaction(tx.id)}
-                    className="text-slate-300 hover:text-red-500 transition-colors p-1"
-                    title="Excluir transação"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

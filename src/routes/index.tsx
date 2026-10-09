@@ -20,8 +20,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { activeTab, setActiveTab } = useFinance();
-  const [modalOpen, setModalOpen] = useState<"despesa" | "receita" | "cartao" | "transferencia" | null>(null);
+  const { activeTab, setActiveTab, modalOpen, setModalOpen } = useFinance();
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full bg-slate-50 text-slate-900 font-sans relative">

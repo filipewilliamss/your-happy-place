@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 
 export type TransactionType = "despesa" | "receita" | "cartao" | "transferencia";
+export type ModalType = "despesa" | "receita" | "cartao" | "transferencia" | null;
 
 export interface Transaction {
   id: string;
@@ -17,6 +18,10 @@ export interface Transaction {
     current: number;
     total: number;
   };
+  attachmentName?: string;
+  notes?: string;
+  tags?: string;
+  ignoreTransaction?: boolean;
 }
 
 export interface Account {
@@ -78,8 +83,14 @@ interface FinanceContextType {
   formatMasked: (val: string) => string;
   isAiAssistantOpen: boolean;
   setIsAiAssistantOpen: (open: boolean) => void;
-  openAiAssistant: () => void;
+  modalOpen: ModalType;
+  setModalOpen: (type: ModalType) => void;
+  editingTransaction: Transaction | null;
+  setEditingTransaction: (tx: Transaction | null) => void;
+  openTransactionModal: (type: ModalType) => void;
+  openEditTransaction: (tx: Transaction) => void;
   addTransaction: (tx: Omit<Transaction, "id">) => void;
+  updateTransaction: (id: string, updated: Partial<Transaction>) => void;
   togglePaid: (id: string) => void;
   deleteTransaction: (id: string) => void;
   addAccount: (acc: Omit<Account, "id">) => void;
@@ -104,10 +115,23 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [hideBalance, setHideBalance] = useState<boolean>(false);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState<boolean>(false);
+  const [modalOpen, setModalOpen] = useState<ModalType>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const toggleHideBalance = () => setHideBalance((prev) => !prev);
   const formatMasked = (val: string) => (hideBalance ? "••••••" : val);
   const openAiAssistant = () => setIsAiAssistantOpen(true);
+
+  const openTransactionModal = (type: ModalType) => {
+    setEditingTransaction(null);
+    setModalOpen(type);
+  };
+
+  const openEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    const mType: ModalType = tx.isExpense ? "despesa" : "receita";
+    setModalOpen(mType);
+  };
 
   const navigateTo = (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => {
     if (options?.transactionFilter) {
@@ -139,6 +163,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setTransactions((prev) => [newTx, ...prev]);
   };
 
+  const updateTransaction = (id: string, updated: Partial<Transaction>) => {
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...updated } : t))
+    );
+  };
+
   const togglePaid = (id: string) => {
     setTransactions((prev) =>
       prev.map((t) => (t.id === id ? { ...t, paid: !t.paid } : t))
@@ -163,6 +193,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     let desp = 0;
 
     transactions.forEach((t) => {
+      if (t.ignoreTransaction) return;
       if (t.isExpense) {
         desp += t.rawAmount;
       } else {
@@ -546,7 +577,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         isAiAssistantOpen,
         setIsAiAssistantOpen,
         openAiAssistant,
+        modalOpen,
+        setModalOpen,
+        editingTransaction,
+        setEditingTransaction,
+        openTransactionModal,
+        openEditTransaction,
         addTransaction,
+        updateTransaction,
         togglePaid,
         deleteTransaction,
         addAccount,
@@ -589,7 +627,14 @@ const defaultContextValue: FinanceContextType = {
   isAiAssistantOpen: false,
   setIsAiAssistantOpen: () => {},
   openAiAssistant: () => {},
+  modalOpen: null,
+  setModalOpen: () => {},
+  editingTransaction: null,
+  setEditingTransaction: () => {},
+  openTransactionModal: () => {},
+  openEditTransaction: () => {},
   addTransaction: () => {},
+  updateTransaction: () => {},
   togglePaid: () => {},
   deleteTransaction: () => {},
   addAccount: () => {},
