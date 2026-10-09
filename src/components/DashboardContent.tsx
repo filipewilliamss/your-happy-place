@@ -8,9 +8,12 @@ import {
   Flag,
   LayoutTemplate
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useFinance } from "../context/FinanceContext";
 
 export function DashboardContent() {
+  const { metrics } = useFinance();
+
   return (
     <div className="max-w-6xl mx-auto">
       {/* Top Header */}
@@ -39,19 +42,19 @@ export function DashboardContent() {
           icon={<Landmark className="h-6 w-6 text-white" />} 
           iconBg="bg-blue-500"
           title="Saldo atual" 
-          value="R$ -30.303,95" 
+          value={metrics.saldoAtual} 
         />
         <KpiCard 
           icon={<ArrowUp className="h-6 w-6 text-white" />} 
           iconBg="bg-green-500"
           title="Receitas" 
-          value="R$ 10.300,00" 
+          value={metrics.receitas} 
         />
         <KpiCard 
           icon={<ArrowDown className="h-6 w-6 text-white" />} 
           iconBg="bg-red-500"
           title="Despesas" 
-          value="R$ 14.121,20" 
+          value={metrics.despesas} 
         />
         <KpiCard 
           icon={<CreditCard className="h-6 w-6 text-white" />} 

@@ -9,116 +9,30 @@ import {
   ArrowUpCircle, 
   ArrowDownCircle, 
   CheckCircle2, 
-  Circle,
-  Home,
-  Briefcase,
-  ShoppingBag,
-  Car,
-  Utensils,
-  CreditCard,
-  Building2,
-  Trash2,
-  Plus
+  Circle, 
+  Home, 
+  Briefcase, 
+  ShoppingBag, 
+  Car, 
+  Utensils, 
+  CreditCard, 
+  Building2, 
+  Trash2, 
+  Plus,
+  Sparkles
 } from "lucide-react";
+import { useFinance } from "../context/FinanceContext";
 
 interface TransacoesContentProps {
   onOpenNewTransaction?: () => void;
 }
 
 export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentProps) {
+  const { transactions, togglePaid, deleteTransaction, metrics } = useFinance();
   const [filterType, setFilterType] = useState<"todos" | "despesas" | "receitas">("todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
-  const [transactions, setTransactions] = useState([
-    {
-      id: "1",
-      date: "09/10/2026",
-      desc: "Supermercado Semar",
-      category: "Alimentação",
-      categoryColor: "bg-orange-500",
-      account: "Carteira",
-      amount: "-452,30",
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "2",
-      date: "08/10/2026",
-      desc: "Salário Mensal",
-      category: "Salário",
-      categoryColor: "bg-green-500",
-      account: "Conta FL",
-      amount: "10.300,00",
-      isExpense: false,
-      paid: true,
-    },
-    {
-      id: "3",
-      date: "08/10/2026",
-      desc: "Aluguel Apartamento",
-      category: "Casa",
-      categoryColor: "bg-blue-500",
-      account: "Conta FL",
-      amount: "-3.200,00",
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "4",
-      date: "07/10/2026",
-      desc: "Combustível Posto Ipiranga",
-      category: "Transporte",
-      categoryColor: "bg-amber-500",
-      account: "Carteira",
-      amount: "-220,00",
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "5",
-      date: "06/10/2026",
-      desc: "Freelance Desenvolvimento",
-      category: "Serviços",
-      categoryColor: "bg-teal-500",
-      account: "Conta FL",
-      amount: "2.500,00",
-      isExpense: false,
-      paid: true,
-    },
-    {
-      id: "6",
-      date: "05/10/2026",
-      desc: "Restaurante Almoço",
-      category: "Alimentação",
-      categoryColor: "bg-orange-500",
-      account: "Carteira",
-      amount: "-85,90",
-      isExpense: true,
-      paid: true,
-    },
-    {
-      id: "7",
-      date: "04/10/2026",
-      desc: "Internet Fibra",
-      category: "Casa",
-      categoryColor: "bg-blue-500",
-      account: "Conta FL",
-      amount: "-139,90",
-      isExpense: true,
-      paid: false,
-    },
-  ]);
-
-  const togglePaid = (id: string) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, paid: !t.paid } : t))
-    );
-  };
-
-  const deleteTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-  };
 
   const filteredTransactions = transactions.filter((t) => {
     if (filterType === "despesas" && !t.isExpense) return false;
@@ -215,7 +129,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Saldo atual</div>
-            <div className="text-sm font-bold text-slate-800 truncate">R$ -30.303,95</div>
+            <div className="text-sm font-bold text-slate-800 truncate">{metrics.saldoAtual}</div>
           </div>
         </div>
 
@@ -225,7 +139,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Receitas</div>
-            <div className="text-sm font-bold text-green-600 truncate">R$ 10.300,00</div>
+            <div className="text-sm font-bold text-green-600 truncate">{metrics.receitas}</div>
           </div>
         </div>
 
@@ -235,7 +149,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Despesas</div>
-            <div className="text-sm font-bold text-red-500 truncate">R$ 14.121,20</div>
+            <div className="text-sm font-bold text-red-500 truncate">{metrics.despesas}</div>
           </div>
         </div>
 
@@ -245,7 +159,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Balanço</div>
-            <div className="text-sm font-bold text-slate-800 truncate">R$ -3.821,20</div>
+            <div className="text-sm font-bold text-slate-800 truncate">{metrics.balanco}</div>
           </div>
         </div>
       </div>

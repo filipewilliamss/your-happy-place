@@ -7,6 +7,7 @@ import { TransacoesContent } from "../components/TransacoesContent";
 import { CartoesContent } from "../components/CartoesContent";
 import { PlanejamentoContent } from "../components/PlanejamentoContent";
 import { RelatoriosContent } from "../components/RelatoriosContent";
+import { AiFinancialAssistant } from "../components/AiFinancialAssistant";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -17,7 +18,7 @@ function Index() {
   const [modalOpen, setModalOpen] = useState<"despesa" | "receita" | "cartao" | "transferencia" | null>(null);
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
+    <div className="flex min-h-screen w-full bg-slate-50 text-slate-900 font-sans relative">
       <AppSidebar 
         activeTab={activeTab} 
         onSelectTab={setActiveTab}
@@ -36,6 +37,9 @@ function Index() {
         {activeTab === "planejamento" && <PlanejamentoContent />}
         {activeTab === "relatorios" && <RelatoriosContent />}
       </main>
+
+      {/* Floating AI Financial Assistant with Voice & Text recognition */}
+      <AiFinancialAssistant />
     </div>
   );
 }

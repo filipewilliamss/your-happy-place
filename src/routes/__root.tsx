@@ -115,13 +115,18 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { FinanceProvider } from "@/context/FinanceContext";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <FinanceProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </FinanceProvider>
     </QueryClientProvider>
   );
 }
+
