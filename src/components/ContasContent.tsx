@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
+import { MonthPicker } from "./MonthPicker";
+
 interface ContasContentProps {
   onOpenNewExpense?: () => void;
 }
@@ -103,10 +105,7 @@ export function ContasContent({ onOpenNewExpense }: ContasContentProps) {
 
           <div className="h-6 w-px bg-slate-200 mx-2" />
 
-          <button className="flex items-center space-x-2 bg-white border border-slate-200 px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-50">
-            <span>outubro</span>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
-          </button>
+          <MonthPicker />
 
           <div className="flex items-center space-x-3 cursor-pointer">
             <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">

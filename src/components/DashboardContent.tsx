@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useFinance } from "../context/FinanceContext";
+import { MonthPicker } from "./MonthPicker";
 
 export function DashboardContent() {
   const { metrics } = useFinance();
@@ -21,10 +22,7 @@ export function DashboardContent() {
         <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
         
         <div className="flex items-center space-x-6">
-          <button className="flex items-center space-x-2 bg-white border border-slate-200 px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-50">
-            <span>outubro</span>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
-          </button>
+          <MonthPicker />
 
           <div className="flex items-center space-x-3 cursor-pointer">
             <div className="h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center text-white font-semibold">

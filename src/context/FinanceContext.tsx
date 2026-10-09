@@ -61,6 +61,10 @@ interface FinanceContextType {
   accounts: Account[];
   cards: CreditCardItem[];
   chatMessages: ChatMessage[];
+  selectedMonth: number;
+  selectedYear: number;
+  setSelectedMonth: (m: number) => void;
+  setSelectedYear: (y: number) => void;
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   togglePaid: (id: string) => void;
   deleteTransaction: (id: string) => void;
@@ -80,6 +84,9 @@ interface FinanceContextType {
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
+  const [selectedMonth, setSelectedMonth] = useState<number>(9); // 9 = Outubro
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: "1",
@@ -475,6 +482,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         accounts,
         cards,
         chatMessages,
+        selectedMonth,
+        selectedYear,
+        setSelectedMonth,
+        setSelectedYear,
         addTransaction,
         togglePaid,
         deleteTransaction,
@@ -503,6 +514,10 @@ const defaultContextValue: FinanceContextType = {
   accounts: [],
   cards: [],
   chatMessages: [],
+  selectedMonth: 9,
+  selectedYear: 2026,
+  setSelectedMonth: () => {},
+  setSelectedYear: () => {},
   addTransaction: () => {},
   togglePaid: () => {},
   deleteTransaction: () => {},

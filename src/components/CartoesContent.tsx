@@ -9,6 +9,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { MonthPicker } from "./MonthPicker";
 
 export function CartoesContent() {
   const [activeTab, setActiveTab] = useState<"abertas" | "fechadas">("fechadas");
@@ -97,6 +98,8 @@ export function CartoesContent() {
           >
             <MoreVertical className="h-4 w-4" />
           </button>
+
+          <MonthPicker />
 
           <div className="flex items-center space-x-3 pl-3 border-l border-slate-200 cursor-pointer">
             <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">

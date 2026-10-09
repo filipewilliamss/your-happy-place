@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
+import { MonthPicker } from "./MonthPicker";
+
 export function PlanejamentoContent() {
   const [isPlanningModalOpen, setIsPlanningModalOpen] = useState(false);
   const [plannedBudget, setPlannedBudget] = useState("");
@@ -56,17 +58,7 @@ export function PlanejamentoContent() {
         </div>
 
         {/* Month Navigator */}
-        <div className="flex items-center space-x-3">
-          <button className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <div className="border border-blue-200 bg-white px-4 py-1.5 rounded-full text-xs font-bold text-blue-600 shadow-xs">
-            Outubro 2026
-          </div>
-          <button className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+        <MonthPicker />
 
         {/* Right Tools & User Profile */}
         <div className="flex items-center space-x-3">

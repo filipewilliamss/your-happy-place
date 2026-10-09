@@ -23,12 +23,29 @@ import {
 } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 
+import { MonthPicker } from "./MonthPicker";
+
 interface TransacoesContentProps {
   onOpenNewTransaction?: () => void;
 }
 
+const MONTH_NAMES_UPPER = [
+  "JANEIRO",
+  "FEVEREIRO",
+  "MARÇO",
+  "ABRIL",
+  "MAIO",
+  "JUNHO",
+  "JULHO",
+  "AGOSTO",
+  "SETEMBRO",
+  "OUTUBRO",
+  "NOVEMBRO",
+  "DEZEMBRO",
+];
+
 export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentProps) {
-  const { transactions, togglePaid, deleteTransaction, metrics } = useFinance();
+  const { transactions, togglePaid, deleteTransaction, metrics, selectedMonth, selectedYear, setSelectedMonth } = useFinance();
   const [filterType, setFilterType] = useState<"todos" | "despesas" | "receitas">("todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -111,9 +128,11 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
             <Filter className="h-4 w-4" />
           </button>
 
+          <MonthPicker />
+
           <button 
             onClick={onOpenNewTransaction}
-            className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors"
+            className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span>Nova</span>
@@ -166,11 +185,21 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
 
       {/* Month Navigator Banner */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 flex items-center justify-center space-x-4 shadow-sm">
-        <button className="p-1 rounded-full hover:bg-slate-100 text-slate-500">
+        <button 
+          onClick={() => setSelectedMonth((selectedMonth - 1 + 12) % 12)}
+          className="p-1 rounded-full hover:bg-slate-100 text-slate-500 cursor-pointer"
+          title="Mês anterior"
+        >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <span className="font-bold text-sm tracking-wider uppercase text-blue-600">OUTUBRO 2026</span>
-        <button className="p-1 rounded-full hover:bg-slate-100 text-slate-500">
+        <span className="font-bold text-sm tracking-wider uppercase text-blue-600">
+          {MONTH_NAMES_UPPER[selectedMonth]} {selectedYear}
+        </span>
+        <button 
+          onClick={() => setSelectedMonth((selectedMonth + 1) % 12)}
+          className="p-1 rounded-full hover:bg-slate-100 text-slate-500 cursor-pointer"
+          title="Próximo mês"
+        >
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>

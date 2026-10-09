@@ -26,7 +26,26 @@ import {
   Line 
 } from "recharts";
 
+import { MonthPicker } from "./MonthPicker";
+import { useFinance } from "../context/FinanceContext";
+
+const MONTH_NAMES = [
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
+];
+
 export function RelatoriosContent() {
+  const { selectedMonth, selectedYear, setSelectedMonth } = useFinance();
   const [chartType, setChartType] = useState<"pie" | "line" | "bar">("pie");
   const [filterCategory, setFilterCategory] = useState("Despesas por categorias");
 
@@ -98,8 +117,10 @@ export function RelatoriosContent() {
             </button>
           </div>
 
-          {/* Filter Dropdown */}
+          {/* Filter Dropdown & MonthPicker */}
           <div className="flex items-center space-x-2">
+            <MonthPicker />
+
             <button className="flex items-center space-x-2 bg-white border border-slate-200 px-4 py-2 rounded-full text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
               <span>{filterCategory}</span>
               <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
@@ -127,13 +148,21 @@ export function RelatoriosContent() {
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 space-y-8">
         {/* Month Navigator */}
         <div className="flex items-center justify-center space-x-4">
-          <button className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
+          <button 
+            onClick={() => setSelectedMonth((selectedMonth - 1 + 12) % 12)}
+            className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Mês anterior"
+          >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="border border-blue-200 bg-white px-5 py-1.5 rounded-full text-xs font-bold text-blue-600 shadow-xs">
-            Outubro 2026
+          <div className="border border-blue-200 bg-white px-5 py-1.5 rounded-full text-xs font-bold text-blue-600 shadow-xs capitalize">
+            {MONTH_NAMES[selectedMonth]} {selectedYear}
           </div>
-          <button className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
+          <button 
+            onClick={() => setSelectedMonth((selectedMonth + 1) % 12)}
+            className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Próximo mês"
+          >
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
