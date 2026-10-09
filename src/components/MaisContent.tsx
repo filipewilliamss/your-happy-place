@@ -19,7 +19,7 @@ import {
 import { useFinance } from "../context/FinanceContext";
 
 export function MaisContent() {
-  const { navigateTo } = useFinance();
+  const { navigateTo, openAiAssistant } = useFinance();
   const [activeTab, setActiveTab] = useState<"gerenciar" | "acompanhar" | "sobre">("gerenciar");
 
   return (
@@ -137,6 +137,7 @@ export function MaisContent() {
           <MenuItem 
             icon={<Sparkles className="h-5 w-5 text-purple-600" />}
             title="Assistente de Inteligência Artificial" 
+            onClick={() => openAiAssistant()}
           />
         </div>
       )}

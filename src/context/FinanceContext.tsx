@@ -76,6 +76,9 @@ interface FinanceContextType {
   hideBalance: boolean;
   toggleHideBalance: () => void;
   formatMasked: (val: string) => string;
+  isAiAssistantOpen: boolean;
+  setIsAiAssistantOpen: (open: boolean) => void;
+  openAiAssistant: () => void;
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   togglePaid: (id: string) => void;
   deleteTransaction: (id: string) => void;
@@ -100,9 +103,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState<number>(9); // 9 = Outubro
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [hideBalance, setHideBalance] = useState<boolean>(false);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState<boolean>(false);
 
   const toggleHideBalance = () => setHideBalance((prev) => !prev);
   const formatMasked = (val: string) => (hideBalance ? "••••••" : val);
+  const openAiAssistant = () => setIsAiAssistantOpen(true);
 
   const navigateTo = (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => {
     if (options?.transactionFilter) {
@@ -418,6 +423,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         hideBalance,
         toggleHideBalance,
         formatMasked,
+        isAiAssistantOpen,
+        setIsAiAssistantOpen,
+        openAiAssistant,
         addTransaction,
         togglePaid,
         deleteTransaction,
@@ -458,6 +466,9 @@ const defaultContextValue: FinanceContextType = {
   hideBalance: false,
   toggleHideBalance: () => {},
   formatMasked: (val: string) => val,
+  isAiAssistantOpen: false,
+  setIsAiAssistantOpen: () => {},
+  openAiAssistant: () => {},
   addTransaction: () => {},
   togglePaid: () => {},
   deleteTransaction: () => {},

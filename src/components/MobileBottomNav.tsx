@@ -9,6 +9,7 @@ import {
   TrendingUp, 
   CreditCard, 
   RefreshCcw,
+  Sparkles,
   X
 } from "lucide-react";
 import { useFinance, NavTab } from "../context/FinanceContext";
@@ -18,7 +19,7 @@ interface MobileBottomNavProps {
 }
 
 export function MobileBottomNav({ onOpenModal }: MobileBottomNavProps) {
-  const { activeTab, setActiveTab } = useFinance();
+  const { activeTab, setActiveTab, openAiAssistant } = useFinance();
   const [quickActionOpen, setQuickActionOpen] = useState(false);
 
   const handleSelectTab = (tab: NavTab) => {
@@ -43,7 +44,7 @@ export function MobileBottomNav({ onOpenModal }: MobileBottomNavProps) {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-t-3xl p-6 pb-24 shadow-2xl border-t border-slate-100 animate-in slide-in-from-bottom-6 duration-200 space-y-4"
           >
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-1">
               <h3 className="font-bold text-slate-800 text-base">Nova Transação</h3>
               <button 
                 onClick={() => setQuickActionOpen(false)}
@@ -52,6 +53,26 @@ export function MobileBottomNav({ onOpenModal }: MobileBottomNavProps) {
                 <X className="h-4 w-4" />
               </button>
             </div>
+
+            {/* Destaque Principal: Assistente IA */}
+            <button
+              onClick={() => {
+                setQuickActionOpen(false);
+                openAiAssistant();
+              }}
+              className="w-full flex items-center p-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md active:scale-[0.99] transition-all text-left group cursor-pointer border border-blue-500"
+            >
+              <div className="h-11 w-11 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center mr-3.5 shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="block text-xs font-bold text-white uppercase tracking-wider">Assistente Financeiro IA</span>
+                  <span className="text-[9px] bg-white/25 text-white px-2 py-0.5 rounded-full font-bold">Voz & Texto</span>
+                </div>
+                <span className="text-xs text-blue-100 font-normal">Fale por áudio ou digite para adicionar rápido</span>
+              </div>
+            </button>
 
             <div className="grid grid-cols-2 gap-3">
               <button

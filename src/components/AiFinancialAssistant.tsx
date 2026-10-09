@@ -19,8 +19,14 @@ import {
 import { useFinance, ChatMessage } from "../context/FinanceContext";
 
 export function AiFinancialAssistant() {
-  const { chatMessages, processAiCommand } = useFinance();
-  const [isOpen, setIsOpen] = useState(false);
+  const { 
+    chatMessages, 
+    processAiCommand, 
+    isAiAssistantOpen, 
+    setIsAiAssistantOpen 
+  } = useFinance();
+  const isOpen = isAiAssistantOpen;
+  const setIsOpen = setIsAiAssistantOpen;
   const [inputValue, setInputValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -131,28 +137,16 @@ export function AiFinancialAssistant() {
 
   return (
     <>
-      {/* Floating Trigger Button */}
-      {!isOpen && (
-        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40 flex items-center space-x-3">
-          <div className="bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-blue-200 shadow-md text-xs font-semibold text-blue-700 hidden sm:flex items-center space-x-1.5 animate-bounce">
-            <Sparkles className="h-3.5 w-3.5 text-blue-600" />
-            <span>Fale ou digite seu gasto com IA</span>
-          </div>
-
-          <button
-            onClick={() => setIsOpen(true)}
-            className="h-13 w-13 md:h-14 md:w-14 rounded-full bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 relative group cursor-pointer"
-            title="Abrir Assistente Financeiro IA"
-          >
-            <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-25"></div>
-            <Sparkles className="h-6 w-6 group-hover:rotate-12 transition-transform" />
-          </button>
-        </div>
-      )}
-
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed inset-x-3 bottom-18 md:inset-x-auto md:bottom-6 md:right-6 z-50 w-auto md:w-full md:max-w-[420px] h-[560px] max-h-[80vh] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <>
+          {/* Mobile backdrop for outside click dismissal */}
+          <div 
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs md:hidden animate-in fade-in duration-150"
+          />
+
+          <div className="fixed inset-x-3 bottom-20 md:inset-x-auto md:bottom-6 md:right-6 z-50 w-auto md:w-[420px] h-[580px] max-h-[82vh] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 p-4 text-white flex items-center justify-between shadow-sm">
             <div className="flex items-center space-x-3">
@@ -320,6 +314,7 @@ export function AiFinancialAssistant() {
             </button>
           </div>
         </div>
+        </>
       )}
     </>
   );

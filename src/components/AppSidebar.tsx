@@ -12,8 +12,10 @@ import {
   Wallet,
   TrendingDown,
   TrendingUp,
-  RefreshCcw
+  RefreshCcw,
+  Sparkles
 } from "lucide-react";
+import { useFinance } from "../context/FinanceContext";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +34,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeTab, onSelectTab, modalOpen, setModalOpen }: AppSidebarProps) {
+  const { openAiAssistant } = useFinance();
+
   return (
     <aside className="w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between z-10">
       <div>
@@ -50,12 +54,27 @@ export function AppSidebar({ activeTab, onSelectTab, modalOpen, setModalOpen }: 
         <div className="px-6 mb-6">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 flex items-center justify-center font-medium transition-colors shadow-sm focus:outline-none">
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 flex items-center justify-center font-medium transition-colors shadow-sm focus:outline-none cursor-pointer">
                 <Plus className="h-5 w-5 mr-2" />
                 Novo
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-52 p-2 bg-white rounded-xl shadow-lg border-slate-100">
+            <DropdownMenuContent align="center" className="w-56 p-2 bg-white rounded-2xl shadow-xl border border-slate-100">
+              <DropdownMenuItem 
+                className="py-2.5 px-3 cursor-pointer rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 hover:from-blue-100 hover:to-indigo-100 text-blue-700 font-semibold mb-1 transition-all group flex items-center shadow-xs" 
+                onClick={() => openAiAssistant()}
+              >
+                <div className="h-7 w-7 rounded-lg bg-blue-600 text-white flex items-center justify-center mr-2.5 shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-blue-700 leading-tight">Assistente IA</span>
+                  <span className="text-[10px] text-blue-500 font-normal leading-tight">Voz ou texto inteligente</span>
+                </div>
+              </DropdownMenuItem>
+
+              <div className="h-px bg-slate-100 my-1" />
+
               <DropdownMenuItem className="py-2.5 cursor-pointer rounded-lg hover:bg-slate-50" onClick={() => setModalOpen("despesa")}>
                 <TrendingDown className="h-4 w-4 mr-3 text-red-500" />
                 <span className="text-slate-700 font-medium text-sm">Despesa</span>
