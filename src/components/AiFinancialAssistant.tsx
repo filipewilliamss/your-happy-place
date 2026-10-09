@@ -34,6 +34,13 @@ export function AiFinancialAssistant() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const baseTextRef = useRef<string>("");
+  const inputValueRef = useRef<string>("");
+  const userWantsListeningRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    inputValueRef.current = inputValue;
+  }, [inputValue]);
 
   useEffect(() => {
     if (isOpen) {
@@ -41,14 +48,14 @@ export function AiFinancialAssistant() {
     }
   }, [chatMessages, isOpen]);
 
-  // Initialize Speech Recognition
+  // Initialize Speech Recognition with Continuous Mode
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = "pt-BR";
 
@@ -58,23 +65,46 @@ export function AiFinancialAssistant() {
       };
 
       recognition.onresult = (event: any) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
+        let sessionTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          sessionTranscript += event.results[i][0].transcript;
         }
-        setInputValue(transcript);
+
+        const base = baseTextRef.current;
+        const combined = (base + sessionTranscript).replace(/\s+/g, " ");
+        setInputValue(combined);
+        inputValueRef.current = combined;
       };
 
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
-        setIsListening(false);
         if (event.error === "not-allowed") {
+          setIsListening(false);
+          userWantsListeningRef.current = false;
           setSpeechError("Permissão do microfone negada. Verifique as configurações do navegador.");
+        } else if (event.error === "no-speech") {
+          // Ignore no-speech pause, keep session ready
+        } else {
+          setIsListening(false);
+          userWantsListeningRef.current = false;
         }
       };
 
       recognition.onend = () => {
-        setIsListening(false);
+        // If user did not manually stop, attempt to keep listening or gracefully stop while preserving all text
+        if (userWantsListeningRef.current) {
+          const current = inputValueRef.current.trim();
+          baseTextRef.current = current ? current + " " : "";
+          try {
+            recognition.start();
+            return;
+          } catch (err) {
+            setIsListening(false);
+            userWantsListeningRef.current = false;
+          }
+        } else {
+          setIsListening(false);
+        }
       };
 
       recognitionRef.current = recognition;
@@ -88,12 +118,23 @@ export function AiFinancialAssistant() {
     }
 
     if (isListening) {
-      recognitionRef.current.stop();
+      userWantsListeningRef.current = false;
+      try {
+        recognitionRef.current.stop();
+      } catch (err) {
+        console.error(err);
+      }
       setIsListening(false);
+      const current = inputValue.trim();
+      baseTextRef.current = current ? current + " " : "";
     } else {
       setSpeechError(null);
+      userWantsListeningRef.current = true;
+      const current = inputValue.trim();
+      baseTextRef.current = current ? current + " " : "";
       try {
         recognitionRef.current.start();
+        setIsListening(true);
       } catch (err) {
         console.error(err);
       }
@@ -104,12 +145,19 @@ export function AiFinancialAssistant() {
     const textToSend = customText || inputValue;
     if (!textToSend.trim() || isProcessing) return;
 
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (recognitionRef.current) {
+      userWantsListeningRef.current = false;
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        // Ignore
+      }
       setIsListening(false);
     }
 
     setInputValue("");
+    inputValueRef.current = "";
+    baseTextRef.current = "";
     setIsProcessing(true);
 
     try {
@@ -260,14 +308,14 @@ export function AiFinancialAssistant() {
           {isListening && (
             <div className="px-4 py-2 bg-rose-50 border-t border-rose-200 flex items-center justify-between text-xs text-rose-700 font-medium animate-pulse">
               <div className="flex items-center space-x-2">
-                <span className="h-2 w-2 rounded-full bg-rose-500"></span>
-                <span>Ouvindo com atenção... Pode falar!</span>
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span>Microfone ligado... Pode falar e fazer pausas à vontade!</span>
               </div>
               <button 
                 onClick={toggleVoiceRecording}
-                className="text-[10px] font-bold text-rose-800 underline uppercase"
+                className="text-[10px] font-bold text-rose-800 hover:text-rose-950 uppercase cursor-pointer"
               >
-                Parar
+                Pausar
               </button>
             </div>
           )}
@@ -283,12 +331,12 @@ export function AiFinancialAssistant() {
             {/* Mic Button */}
             <button
               onClick={toggleVoiceRecording}
-              className={`h-10 w-10 rounded-full flex items-center justify-center transition-all ${
+              className={`h-10 w-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                 isListening
                   ? "bg-rose-500 text-white ring-4 ring-rose-200 scale-105"
                   : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600"
               }`}
-              title={isListening ? "Parar gravação" : "Falar por áudio"}
+              title={isListening ? "Pausar gravação" : "Falar por áudio"}
             >
               <Mic className="h-5 w-5" />
             </button>
@@ -296,9 +344,13 @@ export function AiFinancialAssistant() {
             {/* Text Input */}
             <input
               type="text"
-              placeholder={isListening ? "Fale agora no microfone..." : "Digite ou fale sua despesa..."}
+              placeholder={isListening ? "Ouvindo... pode falar pausadamente..." : "Digite ou fale sua despesa..."}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                inputValueRef.current = e.target.value;
+                baseTextRef.current = e.target.value.trim() ? e.target.value.trim() + " " : "";
+              }}
               onKeyDown={handleKeyDown}
               className="flex-1 bg-slate-100 px-4 py-2.5 rounded-full text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-slate-200"
             />

@@ -204,27 +204,128 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       installmentsCount = parseInt(installmentMatch[1], 10) || 1;
     }
 
-    // 2. Detect value / amount
+    // 2. Intelligent extraction for financial values in Brazilian Portuguese
+    const parseNum = (str: string): number => {
+      if (!str) return 0;
+      let clean = str.trim();
+      if (clean.includes(",") && clean.includes(".")) {
+        clean = clean.replace(/\./g, "").replace(",", ".");
+      } else if (clean.includes(",")) {
+        clean = clean.replace(",", ".");
+      }
+      const val = parseFloat(clean);
+      return isNaN(val) ? 0 : val;
+    };
+
     let detectedAmount = 0;
-    // Look for R$ 100, 100 reais, 100,50, 100.00
-    const currencyMatch = lower.match(/(?:r\$\s*|reais\s*)?(\d+(?:[.,]\d{1,2})?)(?:\s*reais|\s*conto)?/i);
-    if (currencyMatch) {
-      // Find numbers that are likely not the installment multiplier
-      const cleanNumStr = currencyMatch[1].replace(",", ".");
-      detectedAmount = parseFloat(cleanNumStr) || 0;
+    let matchedCurrencyToken = "";
+
+    // Priority 1: Currency symbol prefix (R$, $, BRL)
+    // Ex: "R$65,30", "R$ 65,30", "r$ 1.500,00", "$ 45"
+    const prefixMatch = userText.match(/(?:r\$|\$|brl)\s*(\d{1,3}(?:\.\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/i);
+    if (prefixMatch) {
+      const val = parseNum(prefixMatch[1]);
+      if (val > 0) {
+        detectedAmount = val;
+        matchedCurrencyToken = prefixMatch[0];
+      }
     }
 
-    // Fallback number extraction
-    if (detectedAmount === 0 || (installmentsCount > 1 && detectedAmount === installmentsCount)) {
-      const numbers = lower.match(/\b\d+(?:[.,]\d{1,2})?\b/g);
-      if (numbers) {
-        for (const num of numbers) {
-          const val = parseFloat(num.replace(",", "."));
-          if (val !== installmentsCount) {
-            detectedAmount = val;
-            break;
-          }
+    // Priority 2: Compound "X reais e Y centavos" or "X reais e Y"
+    // Ex: "65 reais e 30 centavos", "65 reais e 30"
+    if (detectedAmount === 0) {
+      const compoundMatch = lower.match(/(\d+)\s*(?:reais|real)\s*e\s*(\d{1,2})(?:\s*centavos?)?/i);
+      if (compoundMatch) {
+        const mainPart = parseInt(compoundMatch[1], 10);
+        const centsPart = parseInt(compoundMatch[2], 10);
+        const decimalVal = compoundMatch[2].length === 1 ? centsPart / 10 : centsPart / 100;
+        detectedAmount = mainPart + decimalVal;
+        matchedCurrencyToken = compoundMatch[0];
+      }
+    }
+
+    // Priority 3: Currency word suffix (reais, real, conto, pila, pau)
+    // Ex: "65,30 reais", "65 reais", "50 conto", "100 pila"
+    if (detectedAmount === 0) {
+      const suffixMatch = lower.match(/(\d{1,3}(?:\.\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|conto|pila|pau)\b/i);
+      if (suffixMatch) {
+        const val = parseNum(suffixMatch[1]);
+        if (val > 0) {
+          detectedAmount = val;
+          matchedCurrencyToken = suffixMatch[0];
         }
+      }
+    }
+
+    // Priority 4: Preposition + number expressing value (no valor de, por, custou, gastei, paguei)
+    if (detectedAmount === 0) {
+      const prepMatch = lower.match(/(?:no\s+valor\s+de|valor\s+de|custou|saiu\s+por|por|paguei|gastei)\s+(?:r\$)?\s*(\d{1,3}(?:\.\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/i);
+      if (prepMatch) {
+        const val = parseNum(prepMatch[1]);
+        const restAfter = lower.slice(prepMatch.index! + prepMatch[0].length).trim();
+        const isBrandNumber = val === 99 && /^(?:food|pop|t[aá]xi|taxi|moto|app)/i.test(restAfter);
+        if (val > 0 && val !== installmentsCount && !isBrandNumber) {
+          detectedAmount = val;
+          matchedCurrencyToken = prepMatch[0];
+        }
+      }
+    }
+
+    // Priority 5: Decimal numbers with comma or dot (e.g. "65,30" or "65.30")
+    // In speech & writing, brand numbers & quantities are almost never decimals ("99 Food", "2 pizzas"). A decimal number is a financial amount!
+    if (detectedAmount === 0) {
+      const decimalRegex = /\b(\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+[.,]\d{1,2})\b/g;
+      let decMatch;
+      while ((decMatch = decimalRegex.exec(lower)) !== null) {
+        const val = parseNum(decMatch[1]);
+        if (val > 0 && val !== installmentsCount) {
+          detectedAmount = val;
+          matchedCurrencyToken = decMatch[0];
+          break;
+        }
+      }
+    }
+
+    // Priority 6: Fallback for integers - scan all numbers in the text excluding brand names, installment counts, dates
+    if (detectedAmount === 0) {
+      const allNumRegex = /\b(\d+(?:\.\d+)?)\b/g;
+      let candidateMatch;
+      const candidates: { amount: number; token: string; priority: number }[] = [];
+
+      while ((candidateMatch = allNumRegex.exec(lower)) !== null) {
+        const val = parseNum(candidateMatch[1]);
+        const token = candidateMatch[0];
+        const startIndex = candidateMatch.index;
+        const endIndex = startIndex + token.length;
+
+        const textAfter = lower.slice(endIndex).trim();
+        const textBefore = lower.slice(Math.max(0, startIndex - 10), startIndex).trim();
+
+        // Skip 99 when it's part of 99 Food / 99 Pop / 99 Táxi etc.
+        if (val === 99 && (/^(?:food|pop|t[aá]xi|taxi|moto|app)/i.test(textAfter) || /(?:no|na|app)\s*$/i.test(textBefore))) {
+          continue;
+        }
+
+        // Skip installment counts
+        if (val === installmentsCount && installmentsCount > 1) {
+          continue;
+        }
+        if (/^\s*(?:x|vezes|parcelas)/i.test(textAfter)) {
+          continue;
+        }
+
+        // Skip dates like "dia 15"
+        if (/(?:dia|data)\s*$/i.test(textBefore)) {
+          continue;
+        }
+
+        candidates.push({ amount: val, token, priority: val > 10 ? 2 : 1 });
+      }
+
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.priority - a.priority || b.amount - a.amount);
+        detectedAmount = candidates[0].amount;
+        matchedCurrencyToken = candidates[0].token;
       }
     }
 
@@ -232,10 +333,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       detectedAmount = 50.0; // smart default if unspecified
     }
 
-    // 3. Detect transaction type
+    // 3. Detect transaction type and account
     let type: TransactionType = "despesa";
     let isExpense = true;
-    let account = "Carteira";
+    let account = "Conta FL";
 
     if (
       lower.includes("recebi") ||
@@ -265,57 +366,76 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     ) {
       type = "cartao";
       account = "Cartão dia 9";
+    } else if (
+      lower.includes("carteira") ||
+      lower.includes("dinheiro") ||
+      lower.includes("em espécie")
+    ) {
+      account = "Carteira";
     }
 
-    // 4. Detect Category
+    // 4. Detect Category (Smart priority: 99 Food / iFood -> Alimentação, 99 Pop / Táxi / Uber -> Transporte)
     let category = "Outros";
     let categoryColor = "bg-slate-500";
 
-    if (/almoç|jant|lanche|comida|restaurante|ifood|mercado|supermercado|feira|café|pizza|hamburguer|padaria/i.test(lower)) {
+    if (/99\s*food|ifood|rappi|delivery|almoç|jant|lanche|comida|restaurante|mercado|supermercado|feira|café|pizza|hamburguer|padaria|a[çc]a[ií]|churrasco/i.test(lower)) {
       category = "Alimentação";
       categoryColor = "bg-orange-500";
-    } else if (/uber|99|gasolina|combustível|posto|pedágio|carro|moto|estacionamento|passagem|ônibus/i.test(lower)) {
+    } else if (/99\s*(?:pop|t[aá]xi|taxi|moto|corrida)|uber|gasolina|combust[ií]vel|posto|ped[aá]gio|carro|moto|estacionamento|passagem|[oô]nibus|metr[oô]/i.test(lower)) {
       category = "Transporte";
       categoryColor = "bg-amber-500";
-    } else if (/aluguel|condomínio|luz|energia|água|internet|gás|casa|reforma|móveis|iptu/i.test(lower)) {
+    } else if (/aluguel|condom[ií]nio|luz|energia|[aá]gua|internet|g[aá]s|casa|reforma|m[oó]veis|iptu/i.test(lower)) {
       category = "Casa";
       categoryColor = "bg-blue-500";
-    } else if (/salário|freela|pagamento|comissão|venda|rendimento/i.test(lower)) {
+    } else if (/sal[aá]rio|freela|pagamento|comiss[aã]o|venda|rendimento/i.test(lower)) {
       category = "Salário";
       categoryColor = "bg-green-500";
-    } else if (/farmácia|remédio|médico|dentista|hospital|exame|academia|saúde/i.test(lower)) {
+    } else if (/farm[aá]cia|rem[eé]dio|m[eé]dico|dentista|hospital|exame|academia|sa[uú]de/i.test(lower)) {
       category = "Saúde";
       categoryColor = "bg-rose-500";
-    } else if (/cinema|netflix|spotify|jogo|game|viagem|show|festa|lazer|cerveja|bar/i.test(lower)) {
+    } else if (/cinema|netflix|spotify|jogo|game|viagem|show|festa|lazer|cerveja|bar|chope/i.test(lower)) {
       category = "Lazer";
       categoryColor = "bg-purple-500";
-    } else if (/curso|faculdade|livro|escola|educação|mensalidade/i.test(lower)) {
+    } else if (/curso|faculdade|livro|escola|educa[cç][aã]o|mensalidade/i.test(lower)) {
       category = "Educação";
       categoryColor = "bg-indigo-500";
-    } else if (/tênis|roupa|celular|computador|compra|shopping/i.test(lower)) {
+    } else if (/t[eê]nis|roupa|camisa|cal[cç]a|celular|computador|compra|shopping/i.test(lower)) {
       category = "Compras";
       categoryColor = "bg-pink-500";
     }
 
-    // 5. Detect Date
-    let dateStr = "09/10/2026";
-    if (lower.includes("ontem")) {
-      dateStr = "08/10/2026";
-    } else if (lower.includes("anteontem")) {
-      dateStr = "07/10/2026";
-    } else if (lower.includes("hoje")) {
-      dateStr = "09/10/2026";
+    // 5. Detect Date (Dynamic calculation)
+    const today = new Date();
+    let targetDate = new Date(today);
+    if (lower.includes("anteontem")) {
+      targetDate.setDate(today.getDate() - 2);
+    } else if (lower.includes("ontem")) {
+      targetDate.setDate(today.getDate() - 1);
+    }
+    const dayStr = String(targetDate.getDate()).padStart(2, "0");
+    const monthStr = String(targetDate.getMonth() + 1).padStart(2, "0");
+    const yearStr = targetDate.getFullYear();
+    const dateStr = `${dayStr}/${monthStr}/${yearStr}`;
+
+    // 6. Generate Clean Description (Preserve brand names like 99 Food while removing values and filler verbs)
+    let cleanDesc = userText;
+
+    if (matchedCurrencyToken) {
+      cleanDesc = cleanDesc.replace(matchedCurrencyToken, " ");
+    } else {
+      cleanDesc = cleanDesc.replace(/(?:r\$|\$)\s*\d+([.,]\d+)?/gi, " ");
     }
 
-    // 6. Generate Clean Description
-    // Clean common helper verbs and amount keywords
-    let cleanDesc = userText
-      .replace(/r\$\s*\d+([.,]\d+)?/gi, "")
-      .replace(/\d+([.,]\d+)?\s*(reais|conto)?/gi, "")
-      .replace(/em\s*\d+\s*(x|vezes|parcelas)/gi, "")
-      .replace(/(hoje|ontem|anteontem|no cartão|no débito|no crédito|na carteira|no pix)/gi, "")
-      .replace(/(gastei|comprei|paguei|recebi|coloquei|foi)\s+(um|uma|com|de|no|na)?/gi, "")
-      .trim();
+    cleanDesc = cleanDesc.replace(/(?:em\s+)?\d+\s*(?:x|vezes|parcelas)\b/gi, " ");
+    cleanDesc = cleanDesc.replace(/\b(hoje|ontem|anteontem)\b/gi, " ");
+    cleanDesc = cleanDesc.replace(/\b(no\s+cartão(?:\s+de\s+crédito)?|no\s+crédito|no\s+débito|na\s+carteira|no\s+pix|em\s+dinheiro|à\s+vista)\b/gi, " ");
+    cleanDesc = cleanDesc.replace(/\b(gastei|comprei|paguei|recebi|coloquei|foi)\s+(?:um|uma|com|de|no|na|pro|pra)?\b/gi, " ");
+    cleanDesc = cleanDesc.replace(/\b(reais|real|centavos?|conto|pila|pau)\b/gi, " ");
+    cleanDesc = cleanDesc.replace(/r\$/gi, " ");
+
+    cleanDesc = cleanDesc.replace(/\s+/g, " ").trim();
+    cleanDesc = cleanDesc.replace(/^(?:de|com|no|na|em|por|para|pra|pro)\s+/i, "").trim();
+    cleanDesc = cleanDesc.replace(/\s+(?:de|com|no|na|em|por|para|pra|pro)$/i, "").trim();
 
     if (!cleanDesc || cleanDesc.length < 2) {
       cleanDesc = category === "Salário" ? "Entrada financeira" : `Gasto em ${category}`;
