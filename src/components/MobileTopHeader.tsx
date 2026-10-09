@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Gift, Crown } from "lucide-react";
+import { Eye, EyeOff, Crown } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 import { MonthPicker } from "./MonthPicker";
 
@@ -25,8 +25,8 @@ export function MobileTopHeader() {
         <MonthPicker />
       </div>
 
-      {/* Right Actions: Eye Toggle & Gift/Notifications */}
-      <div className="flex items-center space-x-2">
+      {/* Right Actions: Eye Toggle */}
+      <div className="flex items-center">
         <button
           onClick={toggleHideBalance}
           className="p-2 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
@@ -34,14 +34,6 @@ export function MobileTopHeader() {
           aria-label={hideBalance ? "Mostrar saldos" : "Ocultar saldos"}
         >
           {hideBalance ? <EyeOff className="h-5 w-5 text-blue-600" /> : <Eye className="h-5 w-5" />}
-        </button>
-
-        <button
-          onClick={() => navigateTo("configuracoes")}
-          className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
-          title="Novidades e Benefícios"
-        >
-          <Gift className="h-4 w-4" />
         </button>
       </div>
     </header>
