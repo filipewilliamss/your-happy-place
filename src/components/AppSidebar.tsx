@@ -33,7 +33,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ activeTab, onSelectTab, modalOpen, setModalOpen }: AppSidebarProps) {
   return (
-    <aside className="w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-200 flex flex-col justify-between z-10">
+    <aside className="w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between z-10">
       <div>
         {/* Generic Logo in Blue and White */}
         <div 

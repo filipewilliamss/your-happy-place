@@ -55,6 +55,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
     setSelectedMonth,
     transactionFilter: filterType,
     setTransactionFilter: setFilterType,
+    formatMasked,
   } = useFinance();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -157,7 +158,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Saldo atual</div>
-            <div className="text-sm font-bold text-slate-800 truncate">{metrics.saldoAtual}</div>
+            <div className="text-sm font-bold text-slate-800 truncate">{formatMasked(metrics.saldoAtual)}</div>
           </div>
         </div>
 
@@ -167,7 +168,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Receitas</div>
-            <div className="text-sm font-bold text-green-600 truncate">{metrics.receitas}</div>
+            <div className="text-sm font-bold text-green-600 truncate">{formatMasked(metrics.receitas)}</div>
           </div>
         </div>
 
@@ -177,7 +178,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Despesas</div>
-            <div className="text-sm font-bold text-red-500 truncate">{metrics.despesas}</div>
+            <div className="text-sm font-bold text-red-500 truncate">{formatMasked(metrics.despesas)}</div>
           </div>
         </div>
 
@@ -187,7 +188,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
           </div>
           <div className="truncate">
             <div className="text-xs text-slate-400 font-medium">Balanço</div>
-            <div className="text-sm font-bold text-slate-800 truncate">{metrics.balanco}</div>
+            <div className="text-sm font-bold text-slate-800 truncate">{formatMasked(metrics.balanco)}</div>
           </div>
         </div>
       </div>
@@ -271,7 +272,7 @@ export function TransacoesContent({ onOpenNewTransaction }: TransacoesContentPro
 
                 <div className="flex items-center space-x-4">
                   <span className={`text-sm font-bold ${tx.isExpense ? "text-red-500" : "text-green-600"}`}>
-                    R$ {tx.amount}
+                    {formatMasked("R$ " + tx.amount)}
                   </span>
 
                   <button 

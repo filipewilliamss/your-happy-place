@@ -56,7 +56,7 @@ export interface ChatMessage {
   };
 }
 
-export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios" | "configuracoes";
+export type NavTab = "dashboard" | "contas" | "transacoes" | "cartoes" | "planejamento" | "relatorios" | "configuracoes" | "mais";
 export type TransactionFilterType = "todos" | "despesas" | "receitas";
 
 interface FinanceContextType {
@@ -73,6 +73,9 @@ interface FinanceContextType {
   transactionFilter: TransactionFilterType;
   setTransactionFilter: (filter: TransactionFilterType) => void;
   navigateTo: (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => void;
+  hideBalance: boolean;
+  toggleHideBalance: () => void;
+  formatMasked: (val: string) => string;
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   togglePaid: (id: string) => void;
   deleteTransaction: (id: string) => void;
@@ -96,6 +99,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [transactionFilter, setTransactionFilter] = useState<TransactionFilterType>("todos");
   const [selectedMonth, setSelectedMonth] = useState<number>(9); // 9 = Outubro
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [hideBalance, setHideBalance] = useState<boolean>(false);
+
+  const toggleHideBalance = () => setHideBalance((prev) => !prev);
+  const formatMasked = (val: string) => (hideBalance ? "••••••" : val);
 
   const navigateTo = (tab: NavTab, options?: { transactionFilter?: TransactionFilterType }) => {
     if (options?.transactionFilter) {
@@ -408,6 +415,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         transactionFilter,
         setTransactionFilter,
         navigateTo,
+        hideBalance,
+        toggleHideBalance,
+        formatMasked,
         addTransaction,
         togglePaid,
         deleteTransaction,
@@ -445,6 +455,9 @@ const defaultContextValue: FinanceContextType = {
   transactionFilter: "todos",
   setTransactionFilter: () => {},
   navigateTo: () => {},
+  hideBalance: false,
+  toggleHideBalance: () => {},
+  formatMasked: (val: string) => val,
   addTransaction: () => {},
   togglePaid: () => {},
   deleteTransaction: () => {},

@@ -7,65 +7,308 @@ import {
   CreditCard, 
   ArrowRight, 
   Flag,
-  LayoutTemplate
+  LayoutTemplate,
+  Eye,
+  EyeOff,
+  Plus
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useFinance } from "../context/FinanceContext";
 import { MonthPicker } from "./MonthPicker";
 
 export function DashboardContent() {
-  const { metrics, navigateTo } = useFinance();
+  const { 
+    metrics, 
+    navigateTo, 
+    accounts, 
+    cards, 
+    hideBalance, 
+    toggleHideBalance, 
+    formatMasked 
+  } = useFinance();
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Top Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
-        
-        <div className="flex items-center space-x-6">
-          <MonthPicker />
-
-          <div className="flex items-center space-x-3 cursor-pointer">
-            <div className="h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center text-white font-semibold">
-              F
-            </div>
-            <span className="text-sm font-medium text-slate-700">Filipe Soares</span>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* MOBILE DASHBOARD VIEW (Matching Reference Images 1 & 2) */}
+      <div className="md:hidden space-y-6">
+        {/* Main Balance */}
+        <div className="flex flex-col items-center justify-center text-center pt-2 pb-2">
+          <span className="text-xs font-medium text-slate-500 mb-1">Saldo atual em contas</span>
+          <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            {formatMasked(metrics.saldoAtual)}
           </div>
+          <button 
+            onClick={toggleHideBalance}
+            className="mt-1.5 text-slate-400 hover:text-slate-600 p-1 rounded-full transition-colors"
+            title={hideBalance ? "Mostrar saldos" : "Ocultar saldos"}
+          >
+            {hideBalance ? <EyeOff className="h-4 w-4 text-blue-600" /> : <Eye className="h-4 w-4" />}
+          </button>
+
+          {/* Receitas e Despesas Pills */}
+          <div className="grid grid-cols-2 gap-3 w-full mt-4">
+            <div 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
+              className="flex items-center space-x-2.5 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs cursor-pointer active:scale-98 transition-transform"
+            >
+              <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <ArrowUp className="h-4 w-4" />
+              </div>
+              <div className="text-left overflow-hidden">
+                <span className="text-[10px] text-slate-400 block font-medium">Receitas</span>
+                <span className="text-xs font-bold text-emerald-600 truncate block">
+                  {formatMasked(metrics.receitas)}
+                </span>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
+              className="flex items-center space-x-2.5 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs cursor-pointer active:scale-98 transition-transform"
+            >
+              <div className="h-8 w-8 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0">
+                <ArrowDown className="h-4 w-4" />
+              </div>
+              <div className="text-left overflow-hidden">
+                <span className="text-[10px] text-slate-400 block font-medium">Despesas</span>
+                <span className="text-xs font-bold text-red-600 truncate block">
+                  {formatMasked(metrics.despesas)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pendências e alertas */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-slate-700">Pendências e alertas</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
+              className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer active:scale-98 transition-transform"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center">
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </div>
+                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  0
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 block mb-0.5">Despesas pendentes</span>
+              <span className="text-sm font-bold text-red-600">{formatMasked("R$ 0,00")}</span>
+            </div>
+
+            <div 
+              onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
+              className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer active:scale-98 transition-transform"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center">
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </div>
+                <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  0
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 block mb-0.5">Receitas pendentes</span>
+              <span className="text-sm font-bold text-emerald-600">{formatMasked("R$ 0,00")}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Contas */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-700">Contas</h2>
+            <button 
+              onClick={() => navigateTo("contas")}
+              className="text-xs font-semibold text-blue-600 hover:underline"
+            >
+              Ver todas
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-3">
+            {accounts.length === 0 ? (
+              <div className="text-center py-4">
+                <Landmark className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 mb-3">Nenhuma conta cadastrada</p>
+                <button 
+                  onClick={() => navigateTo("contas")}
+                  className="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors"
+                >
+                  + Nova conta
+                </button>
+              </div>
+            ) : (
+              accounts.slice(0, 3).map((acc) => (
+                <div key={acc.id} className="flex justify-between items-center py-1.5 border-b border-slate-50 last:border-none">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: acc.color }}>
+                      <Landmark className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">{acc.name}</span>
+                      <span className={`text-xs font-semibold ${acc.isNegative ? "text-red-500" : "text-emerald-600"}`}>
+                        {formatMasked(acc.currentBalance)}
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigateTo("contas")}
+                    className="text-blue-600 p-1 hover:bg-blue-50 rounded-full"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100 text-xs font-bold text-slate-800">
+              <span>Total</span>
+              <span>{formatMasked(metrics.saldoAtual)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Cartões de crédito */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-700">Cartões de crédito</h2>
+            <button 
+              onClick={() => navigateTo("cartoes")}
+              className="text-xs font-semibold text-teal-600 hover:underline"
+            >
+              Ver todos
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-3">
+            <div className="flex space-x-2 border-b border-slate-100 pb-2">
+              <button className="text-xs font-bold px-3 py-1 bg-teal-600 text-white rounded-full">
+                Faturas abertas
+              </button>
+              <button className="text-xs font-medium px-3 py-1 text-slate-500">
+                Faturas fechadas
+              </button>
+            </div>
+
+            {cards.length === 0 ? (
+              <div className="text-center py-4">
+                <CreditCard className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 mb-3">Nenhum cartão cadastrado</p>
+                <button 
+                  onClick={() => navigateTo("cartoes")}
+                  className="text-xs font-bold text-teal-700 bg-teal-50 px-4 py-2 rounded-full hover:bg-teal-100 transition-colors"
+                >
+                  + Novo cartão
+                </button>
+              </div>
+            ) : (
+              cards.slice(0, 2).map((c) => (
+                <div key={c.id} className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">{c.name}</span>
+                    <span className="text-[10px] text-slate-400">Fecha em {c.dueDate}</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">{formatMasked(c.totalInvoice)}</span>
+                </div>
+              ))
+            )}
+
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100 text-xs font-bold text-slate-800">
+              <span>Total</span>
+              <span>{formatMasked("R$ 0,00")}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Despesas por categoria */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-slate-700">Despesas por categoria</h2>
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+            <div className="h-52 flex flex-col items-center justify-center relative">
+              <DonutChart value={formatMasked(metrics.despesas)} color="#0ea5e9" />
+            </div>
+            <div className="text-center mt-3">
+              <button 
+                onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
+                className="text-xs font-bold text-blue-600 uppercase hover:underline"
+              >
+                Ver Mais Detalhes
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Planejamento mensal CTA */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col items-center justify-center text-center space-y-3">
+          <Flag className="h-7 w-7 text-blue-600" />
+          <p className="text-slate-800 font-bold text-sm">
+            Planejamento do Mês
+          </p>
+          <p className="text-slate-500 text-xs">
+            Defina metas para cada categoria e assuma o controle do seu dinheiro.
+          </p>
+          <button 
+            onClick={() => navigateTo("planejamento")}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full shadow-xs cursor-pointer active:scale-95 transition-all"
+          >
+            Definir Planejamento
+          </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <KpiCard 
-          icon={<Landmark className="h-6 w-6 text-white" />} 
-          iconBg="bg-blue-500"
-          title="Saldo atual" 
-          value={metrics.saldoAtual}
-          onClick={() => navigateTo("contas")}
-        />
-        <KpiCard 
-          icon={<ArrowUp className="h-6 w-6 text-white" />} 
-          iconBg="bg-green-500"
-          title="Receitas" 
-          value={metrics.receitas}
-          onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
-        />
-        <KpiCard 
-          icon={<ArrowDown className="h-6 w-6 text-white" />} 
-          iconBg="bg-red-500"
-          title="Despesas" 
-          value={metrics.despesas}
-          onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
-        />
-        <KpiCard 
-          icon={<CreditCard className="h-6 w-6 text-white" />} 
-          iconBg="bg-teal-600"
-          title="Cartão de crédito" 
-          value="R$ 0,00"
-          onClick={() => navigateTo("cartoes")}
-        />
-      </div>
+      {/* DESKTOP DASHBOARD VIEW */}
+      <div className="hidden md:block space-y-6">
+        {/* Top Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
+          
+          <div className="flex items-center space-x-6">
+            <MonthPicker />
+
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <div className="h-8 w-8 rounded-full bg-slate-300 flex items-center justify-center text-white font-semibold">
+                F
+              </div>
+              <span className="text-sm font-medium text-slate-700">Filipe Soares</span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <KpiCard 
+            icon={<Landmark className="h-6 w-6 text-white" />} 
+            iconBg="bg-blue-500"
+            title="Saldo atual" 
+            value={formatMasked(metrics.saldoAtual)}
+            onClick={() => navigateTo("contas")}
+          />
+          <KpiCard 
+            icon={<ArrowUp className="h-6 w-6 text-white" />} 
+            iconBg="bg-green-500"
+            title="Receitas" 
+            value={formatMasked(metrics.receitas)}
+            onClick={() => navigateTo("transacoes", { transactionFilter: "receitas" })}
+          />
+          <KpiCard 
+            icon={<ArrowDown className="h-6 w-6 text-white" />} 
+            iconBg="bg-red-500"
+            title="Despesas" 
+            value={formatMasked(metrics.despesas)}
+            onClick={() => navigateTo("transacoes", { transactionFilter: "despesas" })}
+          />
+          <KpiCard 
+            icon={<CreditCard className="h-6 w-6 text-white" />} 
+            iconBg="bg-teal-600"
+            title="Cartão de crédito" 
+            value={formatMasked("R$ 0,00")}
+            onClick={() => navigateTo("cartoes")}
+          />
+        </div>
 
       <div className="mb-6">
         <button 
@@ -211,6 +454,7 @@ export function DashboardContent() {
       >
         <LayoutTemplate className="h-8 w-8 mb-2 group-hover:scale-105 transition-transform" />
         <span className="text-xs font-semibold uppercase tracking-wider group-hover:underline">Gerenciar Tela Inicial</span>
+      </div>
       </div>
     </div>
   );

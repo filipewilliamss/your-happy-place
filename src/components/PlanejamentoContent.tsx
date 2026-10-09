@@ -107,24 +107,27 @@ export function PlanejamentoContent() {
               </svg>
             </div>
 
-            <p className="text-slate-600 font-medium text-sm mb-6 max-w-sm">
+            <h3 className="text-slate-800 font-bold text-base mb-1">
+              Ooops! Nenhum planejamento para mostrar :(
+            </h3>
+            <p className="text-slate-500 text-xs mb-6 max-w-xs">
               {planningActive 
                 ? `Planejamento ativo para este mês: R$ ${currentPlannedExpenses} definidos.`
-                : "Nenhum orçamento definido para este mês."}
+                : "Defina um planejamento para este mês ou copie do anterior."}
             </p>
 
             <button 
-              onClick={() => setIsPlanningModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-sm hover:shadow-md mb-4"
+              onClick={copyPreviousMonth}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-8 py-3 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-sm hover:shadow-md mb-3 cursor-pointer"
             >
-              Definir novo planejamento
+              Copiar do mês anterior
             </button>
 
             <button 
-              onClick={copyPreviousMonth}
-              className="text-blue-600 hover:text-blue-800 text-xs font-bold tracking-wider uppercase transition-colors"
+              onClick={() => setIsPlanningModalOpen(true)}
+              className="text-blue-600 hover:text-blue-800 text-xs font-bold tracking-wider uppercase transition-colors cursor-pointer"
             >
-              Copiar planejamento do mês anterior
+              Definir novo planejamento
             </button>
           </div>
         </div>
