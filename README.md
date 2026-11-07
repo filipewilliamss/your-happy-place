@@ -1,6 +1,6 @@
-# Your Happy Place
+# Novo projeto
 
-.
+Projeto reiniciado com uma tela branca. As configurações de Lovable Cloud e Git permanecem preservadas.
 
 This project was built with [Lovable](https://lovable.dev).
 
